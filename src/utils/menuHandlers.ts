@@ -4,8 +4,12 @@ export const handleNew = (setNodes: (nodes: Node[]) => void, setEdges: (edges: E
   setNodes([{
     id: '1',
     position: { x: 0, y: 0 },
-    data: { label: '开始节点' },
-    type: 'input'
+    data: { 
+      label: '开始节点',
+      mname: '开始', // 节点模块的名称
+      showInfo: '' // 游戏中显示的信息
+    },
+    type: 'start'
   }]);
   setEdges([]);
 };
