@@ -6,12 +6,9 @@ import ReactFlow, {
   Connection,
   Edge,
   Node,
-  NodeTypes,
-  EdgeTypes,
   useEdgesState,
   useNodesState,
   getConnectedEdges,
-  useReactFlow
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import { handleNew, handleSave, handleLoad } from './utils/menuHandlers'
@@ -245,6 +242,11 @@ function App() {
   // 处理键盘事件
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // 如果正在编辑节点或边，则不处理Delete键，避免误删节点或边
+      if (editingNode || editingEdge) {
+        return;
+      }
+      
       if (event.key === 'Delete') {
         if (selectedNode) {
           deleteNode(selectedNode.id);
@@ -267,7 +269,7 @@ function App() {
   }, [selectedNode, selectedEdge, deleteNode, deleteEdge]);
 
   // 处理节点点击事件
-  const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
+  const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
     // 设置选中节点
     setSelectedNode(node);
     // 清除选中的边，实现边失焦后隐藏控制按钮
@@ -275,14 +277,14 @@ function App() {
   }, []);
 
   // 处理边点击事件
-  const onEdgeClick = useCallback((event: React.MouseEvent, edge: Edge) => {
+  const onEdgeClick = useCallback((_event: React.MouseEvent, edge: Edge) => {
     // 设置选中边
     setSelectedEdge(edge);
     setSelectedNode(null);
     
     // 获取边的路径元素
     const edgeElement = document.getElementById(edge.id);
-    if (edgeElement) {
+    if (edgeElement && edgeElement instanceof SVGPathElement) {
       // 获取边的中点位置
       const pathLength = edgeElement.getTotalLength();
       const midPoint = edgeElement.getPointAtLength(pathLength / 2);

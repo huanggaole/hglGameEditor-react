@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { Edge, useNodes } from 'reactflow';
+import { Edge, useNodes, Node } from 'reactflow';
+
+// 定义节点数据类型接口
+interface NodeData {
+  mname?: string;
+  label?: string;
+  [key: string]: any;
+}
 
 interface EdgeEditorProps {
   edge: Edge;
@@ -18,8 +25,8 @@ const EdgeEditor = ({ edge, onClose, updateEdge }: EdgeEditorProps) => {
   const nodes = useNodes();
   
   // 获取源节点和目标节点
-  const sourceNode = nodes.find(node => node.id === edge.source);
-  const targetNode = nodes.find(node => node.id === edge.target);
+  const sourceNode = nodes.find(node => node.id === edge.source) as Node<NodeData> | undefined;
+  const targetNode = nodes.find(node => node.id === edge.target) as Node<NodeData> | undefined;
   
   // 获取源节点和目标节点的名称
   const sourceNodeName = sourceNode?.data?.mname || sourceNode?.id || '未知节点';
@@ -28,7 +35,8 @@ const EdgeEditor = ({ edge, onClose, updateEdge }: EdgeEditorProps) => {
   const handleSave = () => {
     // 准备更新的数据
     const updatedData = {
-      ntype
+      ntype,
+      btnname
     };
     
     // 如果是按钮跳转，则添加按钮名称
