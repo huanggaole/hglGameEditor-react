@@ -16,6 +16,7 @@ import { StartNode, PlotNode, EndNode } from './components/CustomNodes'
 import { EdgeControls } from './components/NodeEdgeControls'
 import EdgeEditor from './components/EdgeEditor'
 import { CustomEdge } from './components/CustomEdges'
+import PreviewComponent from './components/PreviewComponent'
 
 const NODE_TYPES = {
     START: 'start',
@@ -165,6 +166,7 @@ function App() {
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null)
   const [edgeControlsPosition, setEdgeControlsPosition] = useState({ x: 0, y: 0 })
   const [editingEdge, setEditingEdge] = useState<Edge | null>(null)
+  const [showPreview, setShowPreview] = useState(false)
 
   // 更新节点数据的函数
   const updateNodeData = useCallback((nodeId: string, data: any) => {
@@ -315,6 +317,20 @@ function App() {
           handleLoad(setNodes, setEdges);
           setSelectedEdge(null); // 清除选中的边
         }}>读取</button>
+        <button 
+          onClick={() => setShowPreview(true)}
+          style={{ 
+            backgroundColor: '#4CAF50', 
+            color: 'white',
+            padding: '5px 15px',
+            borderRadius: '4px',
+            border: 'none',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}
+        >
+          预览游戏
+        </button>
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'row' }}>
         <div style={{ width: '200px', backgroundColor: '#e0e0e0', padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -394,6 +410,13 @@ function App() {
           </ReactFlow>
         </div>
       </div>
+      {showPreview && (
+        <PreviewComponent 
+          nodes={nodes} 
+          edges={edges} 
+          onClose={() => setShowPreview(false)} 
+        />
+      )}
     </div>
   )
 }
