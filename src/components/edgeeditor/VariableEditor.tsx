@@ -179,7 +179,7 @@ const VariableEditor: React.FC<VariableEditorProps> = ({
           <div style={{ marginBottom: '10px' }}>
             <label style={{ display: 'block', marginBottom: '5px' }}>变量值:</label>
             <input
-              type={getVariableType(selectedVariable) === 'number' ? 'number' : 'text'}
+              // type={getVariableType(selectedVariable) === 'number' ? 'number' : 'text'}
               value={variableValue}
               onChange={(e) => setVariableValue(e.target.value)}
               style={{ width: '100%', padding: '5px' }}
