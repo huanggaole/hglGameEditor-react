@@ -1,6 +1,6 @@
 import { Node, Edge } from 'reactflow';
 
-export const handleNew = (setNodes: (nodes: Node[]) => void, setEdges: (edges: Edge[]) => void) => {
+export const handleNew = (setNodes: (nodes: Node[]) => void, setEdges: (edges: Edge[]) => void, setVariables?: (variables: any[]) => void) => {
   setNodes([{
     id: '1',
     position: { x: 0, y: 0 },
@@ -12,10 +12,15 @@ export const handleNew = (setNodes: (nodes: Node[]) => void, setEdges: (edges: E
     type: 'start'
   }]);
   setEdges([]);
+  
+  // 如果提供了setVariables函数，则重置变量列表
+  if (setVariables) {
+    setVariables([]);
+  }
 };
 
-export const handleSave = (nodes: Node[], edges: Edge[]) => {
-  const data = JSON.stringify({ nodes, edges }, null, 2);
+export const handleSave = (nodes: Node[], edges: Edge[], variables: any[] = []) => {
+  const data = JSON.stringify({ nodes, edges, variables }, null, 2);
   localStorage.setItem('flowData', data);
   
   const blob = new Blob([data], { type: 'application/json' });
@@ -29,7 +34,7 @@ export const handleSave = (nodes: Node[], edges: Edge[]) => {
   URL.revokeObjectURL(url);
 };
 
-export const handleLoad = (setNodes: (nodes: Node[]) => void, setEdges: (edges: Edge[]) => void) => {
+export const handleLoad = (setNodes: (nodes: Node[]) => void, setEdges: (edges: Edge[]) => void, setVariables?: (variables: any[]) => void) => {
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.json';
@@ -44,6 +49,10 @@ export const handleLoad = (setNodes: (nodes: Node[]) => void, setEdges: (edges: 
         if (data.nodes && data.edges) {
           setNodes(data.nodes);
           setEdges(data.edges);
+          // 如果存在变量数据且提供了setVariables函数，则更新变量
+          if (data.variables && setVariables) {
+            setVariables(data.variables);
+          }
         } else {
           alert('所读取的文件无法解析');
         }
@@ -57,8 +66,12 @@ export const handleLoad = (setNodes: (nodes: Node[]) => void, setEdges: (edges: 
 
   const savedData = localStorage.getItem('flowData');
   if (savedData) {
-    const { nodes: savedNodes, edges: savedEdges } = JSON.parse(savedData);
+    const { nodes: savedNodes, edges: savedEdges, variables: savedVariables } = JSON.parse(savedData);
     setNodes(savedNodes);
     setEdges(savedEdges);
+    // 如果存在变量数据且提供了setVariables函数，则更新变量
+    if (savedVariables && setVariables) {
+      setVariables(savedVariables);
+    }
   }
 };
