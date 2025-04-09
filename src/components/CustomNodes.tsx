@@ -31,6 +31,13 @@ const nodeStyles = {
     padding: '10px',
     backgroundColor: '#fff',
     minWidth: '150px'
+  },
+  container: {
+    border: '2px dashed #666666',  // 虚线边框
+    borderRadius: '8px',
+    padding: '10px',
+    backgroundColor: '#fff',
+    minWidth: '150px'
   }
 };
 
@@ -99,6 +106,31 @@ export const EndNode = ({ data, id, selected }: NodeProps) => {
       {selected && data.onEdit && data.onDelete && (
         <NodeControls 
           node={{ id, data, type: 'end', position: { x: 0, y: 0 } }} 
+          onEdit={data.onEdit} 
+          onDelete={data.onDelete} 
+        />
+      )}
+    </div>
+  );
+};
+
+// 收纳节点
+export const ContainerNode = ({ data, id, selected }: NodeProps) => {
+  return (
+    <div style={{
+      ...nodeStyles.container,
+      border: selected ? '3px dashed #666666' : '2px dashed #666666',
+      position: 'relative'
+    }}>
+      <Handle type="target" position={Position.Top} />
+      <div>
+        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{data.mname || data.label}</div>
+        {data.note && <div style={{ color: '#666', fontSize: '12px', marginTop: '5px' }}>备注: {data.note}</div>}
+      </div>
+      <Handle type="source" position={Position.Bottom} />
+      {selected && data.onEdit && data.onDelete && (
+        <NodeControls 
+          node={{ id, data, type: 'container', position: { x: 0, y: 0 } }} 
           onEdit={data.onEdit} 
           onDelete={data.onDelete} 
         />

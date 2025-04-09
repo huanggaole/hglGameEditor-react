@@ -1,6 +1,46 @@
 import React from 'react';
 import { Node, Edge } from 'reactflow';
 
+interface PathNavigationProps {
+  currentPath: string[];
+  onBack: () => void;
+}
+
+// 路径导航组件
+export const PathNavigation: React.FC<PathNavigationProps> = ({ currentPath, onBack }) => {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      marginBottom: '15px',
+      padding: '8px',
+      backgroundColor: '#f5f5f5',
+      borderRadius: '4px'
+    }}>
+      {currentPath.length > 1 && (
+        <button
+          onClick={onBack}
+          style={{
+            backgroundColor: '#4a90e2',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            padding: '4px 8px',
+            fontSize: '12px',
+            cursor: 'pointer'
+          }}
+        >
+          返回上级
+        </button>
+      )}
+      <div style={{ fontSize: '14px' }}>
+        当前路径: {currentPath.join(' / ')}
+      </div>
+    </div>
+  );
+};
+
 interface NodeControlsProps {
   node: Node;
   onEdit: (node: Node) => void;
@@ -44,6 +84,25 @@ export const NodeControls: React.FC<NodeControlsProps> = ({ node, onEdit, onDele
       >
         编辑
       </button>
+      {node.type === 'container' && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            node.data.onEnter && node.data.onEnter(node.id);
+          }}
+          style={{
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            padding: '2px 8px',
+            fontSize: '12px',
+            cursor: 'pointer',
+          }}
+        >
+          进入
+        </button>
+      )}
       {node.type !== 'start' && (
         <button
           onClick={(e) => {
