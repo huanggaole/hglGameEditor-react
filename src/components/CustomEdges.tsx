@@ -1,5 +1,5 @@
 import React from 'react';
-import { EdgeProps, getBezierPath, Position } from 'reactflow';
+import { EdgeProps, getBezierPath } from 'reactflow';
 
 // 自定义边组件
 export const CustomEdge: React.FC<EdgeProps> = ({

@@ -81,7 +81,7 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
     if (!text) return '';
     
     // 替换条件表达式 {{变量名}?"true显示内容":"false显示内容"}
-    let parsedText = text.replace(/{{([^}]+)}\?"([^"]*)"(?::"([^"]*)"})?/g, (match, varName, trueText, falseText = '') => {
+    let parsedText = text.replace(/{{([^}]+)}\?"([^"]*)"(?::"([^"]*)")?/g, (_match, varName, trueText, falseText = '') => {
       const value = getVariableValue(varName.trim());
       // 对 trueText 和 falseText 中的变量进行递归解析
       const parsedTrueText = parseVariables(trueText);
@@ -90,9 +90,9 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
     });
     
     // 替换普通变量引用 {{变量名}}
-    parsedText = parsedText.replace(/{{([^}]+)}}/g, (match, varName) => {
+    parsedText = parsedText.replace(/{{([^}]+)}}/g, (_match, varName) => {
       const value = getVariableValue(varName.trim());
-      return value !== null && value !== undefined ? String(value) : match;
+      return value !== null && value !== undefined ? String(value) : _match;
     });
     
     return parsedText;
@@ -178,7 +178,6 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
 
   // 构建按钮信息
   const buttons: ButtonInfo[] = outgoingEdges.map(edge => {
-    const targetNode = nodes.find(node => node.id === edge.target);
     // 如果是按钮跳转类型(btnsto)，则使用btnname作为按钮标签，否则使用默认的'下一步'
     const buttonLabel = edge.data?.ntype === 'btnsto' ? edge.data?.btnname || '下一步' : '下一步';
     return {

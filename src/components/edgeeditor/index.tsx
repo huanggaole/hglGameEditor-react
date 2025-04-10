@@ -4,6 +4,15 @@ import { EdgeEditorProps, NodeData } from './types';
 import VariableEditor from './VariableEditor';
 import ConditionEditor from './ConditionEditor';
 
+interface UpdatedData {
+  ntype: string;
+  btnname: string;
+  updateVariables: {[key: string]: any};
+  conditionVariable?: string;
+  conditionType?: string;
+  conditionValue?: string;
+}
+
 const EdgeEditor: React.FC<EdgeEditorProps> = ({ edge, onClose, updateEdge }) => {
   // 初始化边的数据，如果没有data则创建空对象
   const initialData = edge.data || {};
@@ -64,7 +73,7 @@ const EdgeEditor: React.FC<EdgeEditorProps> = ({ edge, onClose, updateEdge }) =>
   
   const handleSave = () => {
     // 准备更新的数据
-    const updatedData = {
+    const updatedData: UpdatedData = {
       ntype,
       btnname,
       // 确保使用最新的updateVariables状态

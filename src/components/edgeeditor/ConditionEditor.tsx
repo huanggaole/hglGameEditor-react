@@ -61,7 +61,7 @@ const ConditionEditor: React.FC<ConditionEditorProps> = ({
   };
 
   // 处理变量选择
-  const handleVariableSelect = (variable: CustomVariable, path: string) => {
+  const handleVariableSelect = (_variable: CustomVariable, path: string) => {
     onConditionChange({ conditionVariable: path });
     setShowConditionVariableSelector(false);
   };

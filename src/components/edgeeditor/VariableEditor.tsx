@@ -65,7 +65,7 @@ const VariableEditor: React.FC<VariableEditorProps> = ({
   };
 
   // 处理变量选择
-  const handleVariableSelect = (variable: CustomVariable, path: string) => {
+  const handleVariableSelect = (_variable: CustomVariable, path: string) => {
     setSelectedVariable(path);
   };
 

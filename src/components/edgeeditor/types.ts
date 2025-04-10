@@ -1,4 +1,4 @@
-import { Edge, Node } from 'reactflow';
+import { Edge } from 'reactflow';
 import { CustomVariable } from '../VariableEditor';
 
 // 为window对象添加appVariables属性的类型声明
