@@ -140,8 +140,9 @@ export const EndNode = ({ data, id, selected }: NodeProps) => {
    
 // 收纳节点
 export const ContainerNode = ({ data, id, selected }: NodeProps) => {
+  const { getNodes } = useReactFlow();
   // 获取该收纳节点下的所有出口节点
-  const exitNodes = data.exitNodes || [];
+  const exitNodes = getNodes().filter(node => node.data.parentId === id && node.type === 'exit');
   
   return (
     <div style={{
@@ -165,20 +166,31 @@ export const ContainerNode = ({ data, id, selected }: NodeProps) => {
         
         return (
           <div key={exitNode.id} style={{ position: 'relative' }}>
+            <Handle
+              type="source"
+              position={Position.Bottom}
+              id={`exit-${exitNode.id}`}
+              style={{
+                left: `${x}%`,
+                bottom: '-15px',
+                transform: 'translateX(-50%)',
+                background: '#000000' // 使用与其他节点相同的灰色
+              }}
+            />
             <div
               style={{
                 position: 'absolute',
                 left: `${x}%`,
-                bottom: '20px',
+                bottom: '-30px', // 将标签移到脚注下方
                 transform: 'translateX(-50%)',
                 fontSize: '10px',
-                color: '#666',
+                color: '#000000',
                 textAlign: 'center',
-                maxWidth: '80px',
+                width: `${100 / totalExits}%`, // 每个标签宽度等于脚注间距
                 wordBreak: 'break-word'
               }}
             >
-              {exitNode.mname || '出口'}
+              {exitNode.data.mname || exitNode.data.label}
             </div>
           </div>
         );
@@ -211,8 +223,7 @@ export const EntryNode = ({}: NodeProps) => {
 };
 
 // 出口节点 - 收纳节点内部的出口点
-export const ExitNode = ({ data, isConnectable, selected }: NodeProps) => {
-  const [showControls, setShowControls] = useState(false);
+export const ExitNode = ({ data, id, selected }: NodeProps) => {
   const { setNodes } = useReactFlow();
 
   const handleDelete = () => {
@@ -224,30 +235,26 @@ export const ExitNode = ({ data, isConnectable, selected }: NodeProps) => {
       style={{
         ...nodeStyles.exit,
         border: selected ? '3px solid #00cc00' : '2px solid #00cc00',
+        position: 'relative',
+        width: '80px',
+        height: '80px',
+        borderRadius: '50%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '10px',
+        backgroundColor: 'white'
       }}
-      onMouseEnter={() => setShowControls(true)}
-      onMouseLeave={() => setShowControls(false)}
     >
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="left"
-        style={{ background: '#00cc00' }}
-        isConnectable={isConnectable}
-      />
-      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{data.name || '出口节点'}</div>
+      <Handle type="target" position={Position.Top} />
+      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{data.mname || data.label}</div>
       {data.note && <div style={{ fontSize: '12px', color: '#666' }}>{data.note}</div>}
-      {showControls && (
+      {selected && data.onEdit && data.onDelete && (
         <NodeControls 
-          node={{ id: data.id, data, type: 'exit', position: { x: 0, y: 0 } }}
-          onEdit={() => {
-            // 打开节点编辑器
-            const event = new CustomEvent('openNodeEditor', {
-              detail: { nodeId: data.id }
-            });
-            window.dispatchEvent(event);
-          }}
-          onDelete={handleDelete} 
+          node={{ id, data, type: 'exit', position: { x: 0, y: 0 } }}
+          onEdit={data.onEdit}
+          onDelete={data.onDelete}
         />
       )}
     </div>

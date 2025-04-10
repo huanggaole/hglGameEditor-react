@@ -16,8 +16,8 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
   const [showVariableSelector, setShowVariableSelector] = useState(false);
   const [variables, setVariables] = useState<CustomVariable[]>([]);
   
-  // 判断是否为收纳节点
-  const isContainerNode = node.type === NODE_TYPES.CONTAINER;
+  // 判断是否为收纳节点或出口节点
+  const isContainerNode = node.type === NODE_TYPES.CONTAINER || node.type === NODE_TYPES.EXIT;
 
   useEffect(() => {
     const appVariables = window.appVariables || [];

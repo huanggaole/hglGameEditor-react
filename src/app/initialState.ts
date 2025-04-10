@@ -57,7 +57,7 @@ const createNode = (type: string, position: {x: number, y: number}, existingNode
     nodeData.showInfo = '';
   }
   
-  const node = {
+  const node: Node = {
     id,
     position,
     data: nodeData,

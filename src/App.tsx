@@ -12,7 +12,7 @@ import ReactFlow, {
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import MenuBar from './components/menu/MenuBar'
-import { StartNode, PlotNode, EndNode, ContainerNode, EntryNode } from './components/CustomNodes'
+import { StartNode, PlotNode, EndNode, ContainerNode, EntryNode, ExitNode } from './components/CustomNodes'
 import { EdgeControls } from './components/NodeEdgeControls'
 import EdgeEditor from './components/edgeeditor'
 import NodeEditor from './components/nodeeditor'
@@ -29,7 +29,8 @@ const nodeTypes = {
   [NODE_TYPES.PLOT]: PlotNode,
   [NODE_TYPES.END]: EndNode,
   [NODE_TYPES.CONTAINER]: ContainerNode,
-  [NODE_TYPES.ENTRY]: EntryNode
+  [NODE_TYPES.ENTRY]: EntryNode,
+  [NODE_TYPES.EXIT]: ExitNode
 }
 
 // 定义自定义边类型映射
@@ -240,6 +241,7 @@ function App() {
           setCurrentPath={setCurrentPath}
           currentContainerId={currentContainerId}
           setCurrentContainerId={setCurrentContainerId}
+          setEdges={setEdges}
         />
         <div style={{ flex: 1 }}>
           <ReactFlow

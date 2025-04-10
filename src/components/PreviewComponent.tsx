@@ -313,6 +313,28 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
       }
     }
     
+    // 如果当前节点是出口节点，查找其父容器节点
+    if (currentNode?.type === 'exit') {
+      const containerNode = nodes.find(node => 
+        node.type === 'container' && 
+        node.id === currentNode.data?.parentId
+      );
+      
+      if (containerNode) {
+        // 查找从容器节点出发的边
+        const containerOutgoingEdges = edges.filter(edge => 
+          edge.source === containerNode.id && 
+          edge.data?.exitId === currentNode.id
+        );
+        
+        if (containerOutgoingEdges.length > 0) {
+          // 跳转到容器节点连接的下一个节点
+          setCurrentNodeId(containerOutgoingEdges[0].target);
+          return;
+        }
+      }
+    }
+    
     // 切换到目标节点
     setCurrentNodeId(targetNodeId);
   };

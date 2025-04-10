@@ -1,15 +1,17 @@
 import { Node, Edge } from 'reactflow';
+import { NODE_LABELS, NODE_TYPES } from '../nodeeditor/constants';
 
 export const handleNew = (setNodes: (nodes: Node[]) => void, setEdges: (edges: Edge[]) => void, setVariables?: (variables: any[]) => void) => {
   setNodes([{
     id: '1',
     position: { x: 0, y: 0 },
     data: { 
-      label: '开始节点',
-      mname: '开始', // 节点模块的名称
-      showInfo: '' // 游戏中显示的信息
+      label: NODE_LABELS[NODE_TYPES.START],
+      mname: '开始',
+      showInfo: '',
+      parentId: null // 设置parentId为null，确保在根目录显示
     },
-    type: 'start'
+    type: NODE_TYPES.START
   }]);
   setEdges([]);
   

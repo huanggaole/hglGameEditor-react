@@ -1,5 +1,5 @@
 import React from 'react';
-import { Node } from 'reactflow';
+import { Node, Edge } from 'reactflow';
 import { NODE_TYPES, NODE_LABELS } from '../nodeeditor/constants';
 
 interface OperPanelProps {
@@ -11,9 +11,10 @@ interface OperPanelProps {
   setCurrentPath: React.Dispatch<React.SetStateAction<{id: string, name: string}[]>>;
   currentContainerId: string | null;
   setCurrentContainerId: React.Dispatch<React.SetStateAction<string | null>>;
+  setEdges: (edges: React.SetStateAction<Edge[]>) => void;
 }
 
-const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge, createNode, currentPath, setCurrentPath, currentContainerId, setCurrentContainerId }) => {
+const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge, createNode, currentPath, setCurrentPath, currentContainerId, setCurrentContainerId, setEdges }) => {
   // 处理返回上一级
   const handleGoBack = () => {
     if (currentPath.length > 1) {
@@ -69,6 +70,34 @@ const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge,
           ))}
         </div>
       </div>
+
+      {/* 在容器内时显示出口节点按钮 */}
+      {currentContainerId && (
+        <button 
+          onClick={() => {
+            const newNode = createNode(NODE_TYPES.EXIT, { x: Math.random() * 500, y: Math.random() * 500 }, nodes, currentContainerId)
+            setNodes((nds) => nds.concat(newNode))
+            setSelectedEdge(null) // 清除选中的边
+          }}
+          style={{ 
+            border: '2px solid #00cc00', 
+            borderRadius: '50%', 
+            width: '80px',
+            height: '80px',
+            padding: '0',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            margin: '0 auto',
+            backgroundColor: 'white',
+            cursor: 'pointer'
+          }}
+        >
+          <div style={{ fontWeight: 'bold' }}>{NODE_LABELS[NODE_TYPES.EXIT]}</div>
+        </button>
+      )}
+
       <button 
         onClick={() => {
           const newNode = createNode(NODE_TYPES.PLOT, { x: Math.random() * 500, y: Math.random() * 500 }, nodes, currentContainerId)
