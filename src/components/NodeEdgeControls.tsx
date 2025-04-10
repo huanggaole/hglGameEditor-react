@@ -44,6 +44,25 @@ export const NodeControls: React.FC<NodeControlsProps> = ({ node, onEdit, onDele
       >
         编辑
       </button>
+      {node.type === 'container' && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            node.data.onEnter && node.data.onEnter(node.id);
+          }}
+          style={{
+            backgroundColor: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            padding: '2px 8px',
+            fontSize: '12px',
+            cursor: 'pointer',
+          }}
+        >
+          进入
+        </button>
+      )}
       {node.type !== 'start' && (
         <button
           onClick={(e) => {

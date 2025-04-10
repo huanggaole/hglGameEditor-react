@@ -1,5 +1,7 @@
 import { Handle, Position, NodeProps } from 'reactflow';
 import { NodeControls } from './NodeEdgeControls';
+import { useState } from 'react';
+import { useReactFlow } from 'reactflow';
 
 // 文本截断辅助函数
 const truncateText = (text: string): string => {
@@ -31,6 +33,35 @@ const nodeStyles = {
     padding: '10px',
     backgroundColor: '#fff',
     minWidth: '150px'
+  },
+  container: {
+    border: '2px dashed #666666',  // 虚线边框
+    borderRadius: '8px',
+    padding: '10px',
+    backgroundColor: '#fff',
+    minWidth: '150px'
+  },
+  entry: {
+    border: '2px solid #ff0000',  // 红色边框
+    borderRadius: '50%',          // 圆形
+    padding: '10px',
+    backgroundColor: '#fff',
+    width: '80px',
+    height: '80px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  exit: {
+    border: '2px solid #00cc00',  // 绿色边框
+    borderRadius: '50%',          // 圆形
+    padding: '10px',
+    backgroundColor: '#fff',
+    width: '80px',
+    height: '80px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 };
 
@@ -101,6 +132,122 @@ export const EndNode = ({ data, id, selected }: NodeProps) => {
           node={{ id, data, type: 'end', position: { x: 0, y: 0 } }} 
           onEdit={data.onEdit} 
           onDelete={data.onDelete} 
+        />
+      )}
+    </div>
+  );
+};
+   
+// 收纳节点
+export const ContainerNode = ({ data, id, selected }: NodeProps) => {
+  // 获取该收纳节点下的所有出口节点
+  const exitNodes = data.exitNodes || [];
+  
+  return (
+    <div style={{
+      ...nodeStyles.container,
+      border: selected ? '3px dashed #666666' : '2px dashed #666666',
+      position: 'relative',
+      minWidth: '200px' // 增加最小宽度以容纳多个出口
+    }}>
+      <Handle type="target" position={Position.Top} />
+      <div>
+        <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{data.mname || data.label}</div>
+        {data.note && <div style={{ color: '#666', fontSize: '12px', marginTop: '5px' }}>备注: {data.note}</div>}
+      </div>
+      
+      {/* 动态生成出口节点的Handle */}
+      {exitNodes.map((exitNode: any, index: number) => {
+        // 计算每个Handle的位置，均匀分布在底部
+        const totalExits = exitNodes.length;
+        const position = index / (totalExits - 1 || 1); // 0到1之间的值
+        const x = position * 100; // 转换为百分比
+        
+        return (
+          <div key={exitNode.id} style={{ position: 'relative' }}>
+            <div
+              style={{
+                position: 'absolute',
+                left: `${x}%`,
+                bottom: '20px',
+                transform: 'translateX(-50%)',
+                fontSize: '10px',
+                color: '#666',
+                textAlign: 'center',
+                maxWidth: '80px',
+                wordBreak: 'break-word'
+              }}
+            >
+              {exitNode.mname || '出口'}
+            </div>
+          </div>
+        );
+      })}
+      
+      {selected && data.onEdit && data.onDelete && (
+        <NodeControls 
+          node={{ id, data, type: 'container', position: { x: 0, y: 0 } }} 
+          onEdit={data.onEdit} 
+          onDelete={data.onDelete} 
+        />
+      )}
+    </div>
+  );
+};
+
+// 入口节点 - 收纳节点内部的入口点
+export const EntryNode = ({}: NodeProps) => {
+  return (
+    <div style={{
+      ...nodeStyles.entry,
+      position: 'relative'
+    }}>
+      <Handle type="source" position={Position.Bottom} />
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontWeight: 'bold' }}>入口</div>
+      </div>
+    </div>
+  );
+};
+
+// 出口节点 - 收纳节点内部的出口点
+export const ExitNode = ({ data, isConnectable, selected }: NodeProps) => {
+  const [showControls, setShowControls] = useState(false);
+  const { setNodes } = useReactFlow();
+
+  const handleDelete = () => {
+    setNodes((nds) => nds.filter((node) => node.id !== data.id));
+  };
+
+  return (
+    <div
+      style={{
+        ...nodeStyles.exit,
+        border: selected ? '3px solid #00cc00' : '2px solid #00cc00',
+      }}
+      onMouseEnter={() => setShowControls(true)}
+      onMouseLeave={() => setShowControls(false)}
+    >
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="left"
+        style={{ background: '#00cc00' }}
+        isConnectable={isConnectable}
+      />
+      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{data.name || '出口节点'}</div>
+      {data.note && <div style={{ fontSize: '12px', color: '#666' }}>{data.note}</div>}
+      {showControls && (
+        <NodeControls 
+          node={{ id: data.id, data, type: 'exit', position: { x: 0, y: 0 } }}
+          onEdit={() => {
+            // 打开节点编辑器
+            const event = new CustomEvent('openNodeEditor', {
+              detail: { nodeId: data.id }
+            });
+            window.dispatchEvent(event);
+          }}
+          onDelete={handleDelete} 
         />
       )}
     </div>

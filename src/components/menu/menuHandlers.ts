@@ -20,7 +20,20 @@ export const handleNew = (setNodes: (nodes: Node[]) => void, setEdges: (edges: E
 };
 
 export const handleSave = (nodes: Node[], edges: Edge[], variables: any[] = []) => {
-  const data = JSON.stringify({ nodes, edges, variables }, null, 2);
+  // 处理节点数据，确保收纳节点的数据结构正确
+  const processedNodes = nodes.map(node => {
+    // 如果是收纳节点，移除showInfo字段
+    if (node.type === 'container') {
+      const { showInfo, ...restData } = node.data;
+      return {
+        ...node,
+        data: restData
+      };
+    }
+    return node;
+  });
+  
+  const data = JSON.stringify({ nodes: processedNodes, edges, variables }, null, 2);
   localStorage.setItem('flowData', data);
   
   const blob = new Blob([data], { type: 'application/json' });

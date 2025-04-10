@@ -292,6 +292,27 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
       });
     }
     
+    // 获取目标节点
+    const targetNode = nodes.find(node => node.id === targetNodeId);
+    
+    // 如果目标节点是容器节点，直接查找其内部的入口节点
+    if (targetNode?.type === 'container') {
+      const entryNode = nodes.find(node => 
+        node.type === 'entry' && 
+        node.data?.parentId === targetNode.id
+      );
+      
+      if (entryNode) {
+        // 如果找到入口节点，直接跳转到入口节点的下一个节点
+        const entryOutgoingEdges = edges.filter(edge => edge.source === entryNode.id);
+        if (entryOutgoingEdges.length > 0) {
+          // 直接跳转到入口节点的下一个节点
+          setCurrentNodeId(entryOutgoingEdges[0].target);
+          return;
+        }
+      }
+    }
+    
     // 切换到目标节点
     setCurrentNodeId(targetNodeId);
   };
@@ -331,7 +352,7 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
         <h2 style={{ margin: 0 }}>
           {currentType === 'start' ? '游戏开始' : 
            currentType === 'plot' ? '剧情页面' : 
-           '游戏结局'}
+           currentType === 'end' ? '游戏结局' : ''}
         </h2>
         <button 
           onClick={onClose}
@@ -358,7 +379,7 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
         backgroundColor: '#f9f9f9',
         whiteSpace: 'pre-wrap' // 添加此样式以保留换行符
       }}>
-        {parseVariables(currentNode?.data?.showInfo || '无内容显示')}
+        {currentNode?.type !== 'container' && parseVariables(currentNode?.data?.showInfo || '无内容显示')}
       </div>
 
       <div className="preview-actions" style={{

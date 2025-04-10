@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Node } from 'reactflow';
 import { CustomVariable } from '../VariableEditor';
-import { NODE_LABELS } from './constants';
+import { NODE_LABELS, NODE_TYPES } from './constants';
 
 interface NodeEditorProps {
   node: Node;
@@ -12,8 +12,12 @@ interface NodeEditorProps {
 const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
   const [mname, setMname] = useState(node.data.mname || '');
   const [showInfo, setShowInfo] = useState(node.data.showInfo || '');
+  const [note, setNote] = useState(node.data.note || '');
   const [showVariableSelector, setShowVariableSelector] = useState(false);
   const [variables, setVariables] = useState<CustomVariable[]>([]);
+  
+  // 判断是否为收纳节点
+  const isContainerNode = node.type === NODE_TYPES.CONTAINER;
 
   useEffect(() => {
     const appVariables = window.appVariables || [];
@@ -21,11 +25,20 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
   }, [showVariableSelector]);
 
   const handleSave = () => {
-    updateNode(node.id, {
-      ...node.data,
-      mname,
-      showInfo
-    });
+    // 根据节点类型保存不同的数据
+    if (isContainerNode) {
+      updateNode(node.id, {
+        ...node.data,
+        mname,
+        note
+      });
+    } else {
+      updateNode(node.id, {
+        ...node.data,
+        mname,
+        showInfo
+      });
+    }
     onClose();
   };
 
@@ -113,50 +126,61 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
         />
       </div>
 
-      <div style={{ marginBottom: '10px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-          <label>显示信息 (showInfo):</label>
-          <button 
-            onClick={() => setShowVariableSelector(!showVariableSelector)}
-            style={{
-              backgroundColor: '#4a90e2',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '2px 8px',
-              fontSize: '12px',
-              cursor: 'pointer',
-            }}
-          >
-            显示变量
-          </button>
+      {isContainerNode ? (
+        <div style={{ marginBottom: '10px' }}>
+          <label style={{ display: 'block', marginBottom: '5px' }}>备注信息 (note):</label>
+          <textarea 
+            value={note} 
+            onChange={(e) => setNote(e.target.value)} 
+            style={{ width: '100%', padding: '5px', minHeight: '100px' }} 
+          />
         </div>
-        <textarea 
-          value={showInfo} 
-          onChange={(e) => setShowInfo(e.target.value)} 
-          style={{ width: '100%', padding: '5px', minHeight: '100px' }} 
-        />
-        {showVariableSelector && (
-          <div style={{
-            marginTop: '10px',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-            padding: '10px',
-            maxHeight: '200px',
-            overflowY: 'auto',
-            backgroundColor: 'white'
-          }}>
-            <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>选择要显示的变量:</div>
-            {variables.length === 0 ? (
-              <div style={{ color: '#666', fontStyle: 'italic' }}>
-                暂无变量，请先在"变量设置"中添加变量
-              </div>
-            ) : (
-              <div>{renderVariableOptions(variables)}</div>
-            )}
+      ) : (
+        <div style={{ marginBottom: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+            <label>显示信息 (showInfo):</label>
+            <button 
+              onClick={() => setShowVariableSelector(!showVariableSelector)}
+              style={{
+                backgroundColor: '#4a90e2',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '2px 8px',
+                fontSize: '12px',
+                cursor: 'pointer',
+              }}
+            >
+              显示变量
+            </button>
           </div>
-        )}
-      </div>
+          <textarea 
+            value={showInfo} 
+            onChange={(e) => setShowInfo(e.target.value)} 
+            style={{ width: '100%', padding: '5px', minHeight: '100px' }} 
+          />
+          {showVariableSelector && (
+            <div style={{
+              marginTop: '10px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              padding: '10px',
+              maxHeight: '200px',
+              overflowY: 'auto',
+              backgroundColor: 'white'
+            }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>选择要显示的变量:</div>
+              {variables.length === 0 ? (
+                <div style={{ color: '#666', fontStyle: 'italic' }}>
+                  暂无变量，请先在"变量设置"中添加变量
+                </div>
+              ) : (
+                <div>{renderVariableOptions(variables)}</div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '15px' }}>
         <button onClick={onClose}>取消</button>

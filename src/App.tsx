@@ -11,14 +11,15 @@ import ReactFlow, {
   getConnectedEdges,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
-import { handleNew, handleSave, handleLoad } from './utils/menuHandlers'
-import { StartNode, PlotNode, EndNode } from './components/CustomNodes'
+import MenuBar from './components/menu/MenuBar'
+import { StartNode, PlotNode, EndNode, ContainerNode, EntryNode } from './components/CustomNodes'
 import { EdgeControls } from './components/NodeEdgeControls'
 import EdgeEditor from './components/edgeeditor'
 import NodeEditor from './components/nodeeditor'
 import { CustomEdge } from './components/CustomEdges'
 import PreviewComponent from './components/PreviewComponent'
 import VariableEditor, { CustomVariable } from './components/VariableEditor'
+import OperPanel from './components/operpanel'
 
 import { NODE_TYPES, NODE_LABELS } from './components/nodeeditor/constants'
 
@@ -26,7 +27,9 @@ import { NODE_TYPES, NODE_LABELS } from './components/nodeeditor/constants'
 const nodeTypes = {
   [NODE_TYPES.START]: StartNode,
   [NODE_TYPES.PLOT]: PlotNode,
-  [NODE_TYPES.END]: EndNode
+  [NODE_TYPES.END]: EndNode,
+  [NODE_TYPES.CONTAINER]: ContainerNode,
+  [NODE_TYPES.ENTRY]: EntryNode
 }
 
 // 定义自定义边类型映射
@@ -48,6 +51,8 @@ function App() {
   const [showPreview, setShowPreview] = useState(false)
   const [showVariableEditor, setShowVariableEditor] = useState(false)
   const [variables, setVariables] = useState<CustomVariable[]>([])
+  const [currentContainerId, setCurrentContainerId] = useState<string | null>(null)
+  const [currentPath, setCurrentPath] = useState<{id: string, name: string}[]>([{id: 'root', name: 'root'}])
 
   // 将变量列表添加到window对象，使其可以在NodeEditor中访问
   useEffect(() => {
@@ -99,6 +104,22 @@ function App() {
 
   // 删除节点及其连接的边
   const deleteNode = useCallback((nodeId: string) => {
+    // 获取要删除的节点
+    const nodeToDelete = nodes.find(node => node.id === nodeId);
+    
+    // 如果是收纳节点，需要同时删除其子节点和子边
+    if (nodeToDelete && nodeToDelete.type === NODE_TYPES.CONTAINER) {
+      // 找出所有子节点
+      const childNodeIds = nodes
+        .filter(node => node.data.parentId === nodeId)
+        .map(node => node.id);
+      
+      // 递归删除子节点（如果子节点中有收纳节点）
+      childNodeIds.forEach(childId => {
+        deleteNode(childId);
+      });
+    }
+    
     // 找出与该节点相连的所有边
     const connectedEdges = getConnectedEdges([{ id: nodeId } as Node], edges);
     const edgeIdsToRemove = connectedEdges.map(edge => edge.id);
@@ -111,7 +132,7 @@ function App() {
     
     // 清除选中状态
     setSelectedNode(null);
-  }, [edges, setEdges, setNodes])
+  }, [nodes, edges, setEdges, setNodes])
 
   // 删除边
   const deleteEdge = useCallback((edgeId: string) => {
@@ -198,68 +219,28 @@ function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '10px', backgroundColor: '#f0f0f0', display: 'flex', gap: '10px' }}>
-        <button onClick={() => {
-          handleNew(setNodes, setEdges, setVariables);
-          setSelectedEdge(null); // 清除选中的边
-        }}>新建</button>
-        <button onClick={() => handleSave(nodes, edges, variables)}>存档</button>
-        <button onClick={() => {
-          handleLoad(setNodes, setEdges, setVariables);
-          setSelectedEdge(null); // 清除选中的边
-        }}>读取</button>
-        <button 
-          onClick={() => setShowPreview(true)}
-          style={{ 
-            backgroundColor: '#4CAF50', 
-            color: 'white',
-            padding: '5px 15px',
-            borderRadius: '4px',
-            border: 'none',
-            fontWeight: 'bold',
-            cursor: 'pointer'
-          }}
-        >
-          预览游戏
-        </button>
-        <button 
-          onClick={() => setShowVariableEditor(true)}
-          style={{ 
-            backgroundColor: '#2196F3', 
-            color: 'white',
-            padding: '5px 15px',
-            borderRadius: '4px',
-            border: 'none',
-            fontWeight: 'bold',
-            cursor: 'pointer'
-          }}
-        >
-          变量设置
-        </button>
-      </div>
+      <MenuBar
+        nodes={nodes}
+        edges={edges}
+        variables={variables}
+        setNodes={setNodes}
+        setEdges={setEdges}
+        setVariables={setVariables}
+        setSelectedEdge={setSelectedEdge}
+        setShowPreview={setShowPreview}
+        setShowVariableEditor={setShowVariableEditor}
+      />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'row' }}>
-        <div style={{ width: '200px', backgroundColor: '#e0e0e0', padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button 
-            onClick={() => {
-              const newNode = createNode(NODE_TYPES.PLOT, { x: Math.random() * 500, y: Math.random() * 500 }, nodes)
-              setNodes((nds) => nds.concat(newNode))
-              setSelectedEdge(null) // 清除选中的边
-            }}
-            style={{ border: '2px solid #888888', borderRadius: '4px', padding: '8px' }}
-          >
-            {NODE_LABELS[NODE_TYPES.PLOT]}
-          </button>
-          <button 
-            onClick={() => {
-              const newNode = createNode(NODE_TYPES.END, { x: Math.random() * 500, y: Math.random() * 500 }, nodes)
-              setNodes((nds) => nds.concat(newNode))
-              setSelectedEdge(null) // 清除选中的边
-            }}
-            style={{ border: '2px solid #00cc00', borderRadius: '4px', padding: '8px' }}
-          >
-            {NODE_LABELS[NODE_TYPES.END]}
-          </button>
-        </div>
+        <OperPanel 
+          nodes={nodes}
+          setNodes={setNodes}
+          setSelectedEdge={setSelectedEdge}
+          createNode={createNode}
+          currentPath={currentPath}
+          setCurrentPath={setCurrentPath}
+          currentContainerId={currentContainerId}
+          setCurrentContainerId={setCurrentContainerId}
+        />
         <div style={{ flex: 1 }}>
           <ReactFlow
             nodes={nodes.map(node => ({
@@ -267,10 +248,29 @@ function App() {
               data: {
                 ...node.data,
                 onEdit: (node: Node) => setEditingNode(node),
-                onDelete: deleteNode
-              }
+                onDelete: deleteNode,
+                onEnter: (nodeId: string) => {
+                  // 处理进入收纳节点的逻辑
+                  setCurrentContainerId(nodeId);
+                  // 获取节点名称
+                  const node = nodes.find(n => n.id === nodeId);
+                  const nodeName = node?.data?.mname || nodeId;
+                  // 更新路径
+                  setCurrentPath(prev => [...prev, {id: nodeId, name: nodeName}]);
+                  console.log(`进入收纳节点: ${nodeId}`);
+                  // 这里可以添加更多的逻辑，比如显示子节点等
+                }
+              },
+              // 根据当前容器ID过滤节点，只显示当前容器下的节点
+              hidden: node.data.parentId !== currentContainerId
             }))}
-            edges={edges}
+            edges={edges.filter(edge => {
+              // 过滤边，只显示当前容器下的边
+              const sourceNode = nodes.find(n => n.id === edge.source);
+              const targetNode = nodes.find(n => n.id === edge.target);
+              return sourceNode?.data.parentId === currentContainerId && 
+                     targetNode?.data.parentId === currentContainerId;
+            })}
             edgeTypes={edgeTypes}
             nodeTypes={nodeTypes}
             onNodesChange={onNodesChange}
