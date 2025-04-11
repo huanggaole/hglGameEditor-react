@@ -33,25 +33,24 @@ const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge,
   return (
     <div style={{ width: '200px', backgroundColor: '#e0e0e0', padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
       {/* 地址栏和返回按钮 */}
-      <div style={{ marginBottom: '10px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-          <button 
-            onClick={handleGoBack}
-            disabled={currentPath.length <= 1}
-            style={{ 
-              padding: '4px 8px', 
-              marginRight: '8px',
-              backgroundColor: currentPath.length > 1 ? '#4a90e2' : '#cccccc',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: currentPath.length > 1 ? 'pointer' : 'not-allowed'
-            }}
-          >
-            ↑ 
-          </button>
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+        <button 
+          onClick={handleGoBack}
+          disabled={currentPath.length <= 1}
+          style={{ 
+            padding: '4px 8px', 
+            marginLeft: '8px', // 修改为 marginLeft
+            backgroundColor: currentPath.length > 1 ? '#4a90e2' : '#cccccc',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: currentPath.length > 1 ? 'pointer' : 'not-allowed'
+          }}
+        >
+          ↑ 
+        </button>
         <div style={{ 
+          flex: 1,
           backgroundColor: 'white', 
           padding: '6px', 
           borderRadius: '4px',

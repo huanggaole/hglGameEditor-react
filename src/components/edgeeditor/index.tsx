@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNodes, Node } from 'reactflow';
 import { EdgeEditorProps, NodeData } from './types';
 import VariableEditor from './VariableEditor';
@@ -16,6 +16,7 @@ interface UpdatedData {
 const EdgeEditor: React.FC<EdgeEditorProps> = ({ edge, onClose, updateEdge }) => {
   // 初始化边的数据，如果没有data则创建空对象
   const initialData = edge.data || {};
+  // 不再由用户选择跳转方式，而是根据源节点的Handle类型自动确定
   const [ntype, setNtype] = useState(initialData.ntype || 'goto'); // 默认为直接跳转
   const [btnname, setBtnname] = useState(initialData.btnname || ''); // 按钮名称
   const [updateVariables, setUpdateVariables] = useState<{[key: string]: any}>(initialData.updateVariables || {}); // 变量更新
@@ -35,6 +36,24 @@ const EdgeEditor: React.FC<EdgeEditorProps> = ({ edge, onClose, updateEdge }) =>
   // 获取源节点和目标节点的名称
   const sourceNodeName = sourceNode?.data?.mname || sourceNode?.id || '未知节点';
   const targetNodeName = targetNode?.data?.mname || targetNode?.id || '未知节点';
+  
+  // 根据源节点的Handle ID确定跳转方式
+  useEffect(() => {
+    if (edge.sourceHandle && edge.sourceHandle.startsWith('button-')) {
+      // 如果源Handle ID以'button-'开头，说明是按钮跳转
+      setNtype('btnsto');
+      // 尝试从源节点的按钮数据中获取按钮名称
+      if (sourceNode?.data?.buttons) {
+        const buttonIndex = parseInt(edge.sourceHandle.replace('button-', ''));
+        if (!isNaN(buttonIndex) && sourceNode.data.buttons[buttonIndex]) {
+          setBtnname(sourceNode.data.buttons[buttonIndex].title || `按钮${buttonIndex+1}`);
+        }
+      }
+    } else {
+      // 否则是直接跳转
+      setNtype('goto');
+    }
+  }, [edge.sourceHandle, sourceNode]);
 
   // 获取变量的类型
   const getVariableType = (variablePath: string): string => {
@@ -141,47 +160,12 @@ const EdgeEditor: React.FC<EdgeEditorProps> = ({ edge, onClose, updateEdge }) =>
           style={{ width: '100%', padding: '5px' }} 
         />
       </div>
-
-      <div style={{ marginBottom: '10px' }}>
-        <label style={{ display: 'block', marginBottom: '5px' }}>跳转方式:</label>
-        <select
-          value={ntype}
-          onChange={(e) => setNtype(e.target.value)}
-          style={{ width: '100%', padding: '5px' }}
-        >
-          <option value="goto">直接跳转</option>
-          <option value="btnsto">按钮跳转</option>
-          <option value="condition">条件跳转</option>
-        </select>
-      </div>
-
-      {ntype === 'btnsto' && (
-        <div style={{ marginBottom: '10px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>按钮名称:</label>
-          <input 
-            type="text" 
-            value={btnname} 
-            onChange={(e) => setBtnname(e.target.value)} 
-            style={{ width: '100%', padding: '5px' }} 
-          />
-        </div>
-      )}
-
-      {ntype === 'condition' ? (
-        <ConditionEditor
-          conditionVariable={conditionVariable}
-          conditionType={conditionType}
-          conditionValue={conditionValue}
-          getVariableType={getVariableType}
-          onConditionChange={handleConditionChange}
-        />
-      ) : (
-        <VariableEditor
-          updateVariables={updateVariables}
-          onUpdateVariables={setUpdateVariables}
-          getVariableType={getVariableType}
-        />
-      )}
+      
+      <VariableEditor
+        updateVariables={updateVariables}
+        onUpdateVariables={setUpdateVariables}
+        getVariableType={getVariableType}
+      />
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '15px' }}>
         <button onClick={handleCancel}>取消</button>

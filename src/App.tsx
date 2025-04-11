@@ -143,15 +143,40 @@ function App() {
 
   const onConnect = useCallback(
     (params: Connection) => {
-      // 先添加边
-      const newEdge = addEdge(params, edges)[edges.length];
+      // 根据源节点的Handle ID确定跳转方式
+      let ntype = 'goto'; // 默认为直接跳转
+      let btnname = '';
+      
+      // 检查是否是按钮跳转
+      if (params.sourceHandle && params.sourceHandle.startsWith('button-')) {
+        ntype = 'btnsto';
+        // 尝试从源节点获取按钮名称
+        const sourceNode = nodes.find(node => node.id === params.source);
+        if (sourceNode?.data?.buttons) {
+          const buttonIndex = parseInt(params.sourceHandle.replace('button-', ''));
+          if (!isNaN(buttonIndex) && sourceNode.data.buttons[buttonIndex]) {
+            btnname = sourceNode.data.buttons[buttonIndex].title || `按钮${buttonIndex+1}`;
+          }
+        }
+      }
+      
+      // 创建带有跳转方式的边
+      const edgeWithType = {
+        ...params,
+        data: { ntype, btnname, updateVariables: {} }
+      };
+      
+      // 添加边
+      const newEdge = addEdge(edgeWithType, edges)[edges.length];
+      
       // 设置新添加的边为编辑状态，自动弹出编辑框
       setTimeout(() => {
         setEditingEdge(newEdge);
       }, 100);
-      return setEdges((eds) => addEdge(params, eds));
+      
+      return setEdges((eds) => addEdge(edgeWithType, eds));
     },
-    [edges, setEdges]
+    [edges, setEdges, nodes]
   )
 
   // 处理键盘事件

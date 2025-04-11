@@ -189,8 +189,11 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
 
   // 处理按钮点击事件
   const handleButtonClick = (targetNodeId: string, edgeId: string) => {
+    console.log('handleButtonClick called with:', { targetNodeId, edgeId, currentNodeId: currentNode?.id, currentNodeType: currentNode?.type });
+    
     // 查找对应的边，检查是否有变量更新操作
     const edge = edges.find(e => e.id === edgeId);
+    console.log('Found edge:', edge);
     
     // 如果是条件跳转，先判断条件是否满足
     if (edge?.data?.ntype === 'condition') {
@@ -294,6 +297,7 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
     
     // 获取目标节点
     const targetNode = nodes.find(node => node.id === targetNodeId);
+    console.log('Target node:', targetNode);
     
     // 如果目标节点是容器节点，直接查找其内部的入口节点
     if (targetNode?.type === 'container') {
@@ -313,19 +317,29 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
       }
     }
     
+    // 如果当前节点是入口节点，直接跳转到目标节点
+    if (currentNode?.type === 'entry') {
+      console.log('Current node is entry node, jumping to target:', targetNodeId);
+      setCurrentNodeId(targetNodeId);
+      return;
+    }
+    
     // 如果当前节点是出口节点，查找其父容器节点
     if (currentNode?.type === 'exit') {
+      console.log('Current node is exit node:', currentNode);
       const containerNode = nodes.find(node => 
         node.type === 'container' && 
         node.id === currentNode.data?.parentId
       );
+      console.log('Found container node:', containerNode);
       
       if (containerNode) {
-        // 查找从容器节点出发的边
+        // 查找从容器节点出发的边，且边的sourceHandle包含当前出口节点的ID
         const containerOutgoingEdges = edges.filter(edge => 
           edge.source === containerNode.id && 
-          edge.data?.exitId === currentNode.id
+          edge.sourceHandle === `exit-${currentNode.id}`
         );
+        console.log('Container outgoing edges:', containerOutgoingEdges);
         
         if (containerOutgoingEdges.length > 0) {
           // 跳转到容器节点连接的下一个节点
@@ -333,9 +347,15 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
           return;
         }
       }
+      
+      // 如果没有找到对应的边，直接跳转到目标节点
+      console.log('Direct jump to target node:', targetNodeId);
+      setCurrentNodeId(targetNodeId);
+      return;
     }
     
     // 切换到目标节点
+    console.log('Switching to target node:', targetNodeId);
     setCurrentNodeId(targetNodeId);
   };
 

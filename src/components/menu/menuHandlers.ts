@@ -63,7 +63,31 @@ export const handleLoad = (setNodes: (nodes: Node[]) => void, setEdges: (edges: 
         const data = JSON.parse(event.target?.result as string);
         if (data.nodes && data.edges) {
           setNodes(data.nodes);
-          setEdges(data.edges);
+          
+          // 确保边的sourceHandle属性被正确保留
+          const processedEdges = data.edges.map((edge: Edge) => {
+            // 如果边的数据中有btnname属性，说明是按钮跳转，需要确保sourceHandle属性正确
+            if (edge.data && edge.data.ntype === 'btnsto') {
+              // 查找对应的按钮索引
+              const sourceNode = data.nodes.find((node: Node) => node.id === edge.source);
+              if (sourceNode && sourceNode.data && sourceNode.data.buttons) {
+                const buttonIndex = sourceNode.data.buttons.findIndex(
+                  (btn: any) => btn.title === edge.data.btnname
+                );
+                if (buttonIndex !== -1) {
+                  // 设置正确的sourceHandle
+                  return {
+                    ...edge,
+                    sourceHandle: `button-${buttonIndex}`
+                  };
+                }
+              }
+            }
+            return edge;
+          });
+          
+          setEdges(processedEdges);
+          
           // 如果存在变量数据且提供了setVariables函数，则更新变量
           if (data.variables && setVariables) {
             setVariables(data.variables);
@@ -81,12 +105,40 @@ export const handleLoad = (setNodes: (nodes: Node[]) => void, setEdges: (edges: 
 
   const savedData = localStorage.getItem('flowData');
   if (savedData) {
-    const { nodes: savedNodes, edges: savedEdges, variables: savedVariables } = JSON.parse(savedData);
-    setNodes(savedNodes);
-    setEdges(savedEdges);
-    // 如果存在变量数据且提供了setVariables函数，则更新变量
-    if (savedVariables && setVariables) {
-      setVariables(savedVariables);
+    try {
+      const { nodes: savedNodes, edges: savedEdges, variables: savedVariables } = JSON.parse(savedData);
+      setNodes(savedNodes);
+      
+      // 确保边的sourceHandle属性被正确保留
+      const processedEdges = savedEdges.map((edge: Edge) => {
+        // 如果边的数据中有btnname属性，说明是按钮跳转，需要确保sourceHandle属性正确
+        if (edge.data && edge.data.ntype === 'btnsto') {
+          // 查找对应的按钮索引
+          const sourceNode = savedNodes.find((node: Node) => node.id === edge.source);
+          if (sourceNode && sourceNode.data && sourceNode.data.buttons) {
+            const buttonIndex = sourceNode.data.buttons.findIndex(
+              (btn: any) => btn.title === edge.data.btnname
+            );
+            if (buttonIndex !== -1) {
+              // 设置正确的sourceHandle
+              return {
+                ...edge,
+                sourceHandle: `button-${buttonIndex}`
+              };
+            }
+          }
+        }
+        return edge;
+      });
+      
+      setEdges(processedEdges);
+      
+      // 如果存在变量数据且提供了setVariables函数，则更新变量
+      if (savedVariables && setVariables) {
+        setVariables(savedVariables);
+      }
+    } catch (error) {
+      console.error('加载本地存储数据失败:', error);
     }
   }
 };

@@ -5,7 +5,7 @@ import { EdgeProps, getBezierPath } from 'reactflow';
 export const CustomEdge: React.FC<EdgeProps> = ({
   id,
   source,
-  target ,
+  target,
   sourceX,
   sourceY,
   targetX,
@@ -15,6 +15,7 @@ export const CustomEdge: React.FC<EdgeProps> = ({
   style = {},
   data,
   markerEnd,
+  sourceHandle, // 添加sourceHandle属性
 }) => {
   // 检查是否是自连接（源节点和目标节点是同一个）
   const isSelfConnecting = source === target;
@@ -50,6 +51,8 @@ export const CustomEdge: React.FC<EdgeProps> = ({
       targetX,
       targetY,
       targetPosition,
+      // 确保sourceHandle属性被传递给getBezierPath函数
+      sourceHandle,
     });
   }
 
@@ -81,14 +84,6 @@ export const CustomEdge: React.FC<EdgeProps> = ({
           backgroundColor: 'white',
         }}
       >
-        {/* 显示跳转方式信息 */}
-        <tspan dy="-10" dx="0">
-          {data?.ntype === 'btnsto' 
-            ? `按钮跳转:${data?.btnname || ''}` 
-            : data?.ntype === 'condition'
-            ? `跳转条件:${data?.conditionVariable} ${data?.conditionType} ${data?.conditionValue || ''}`
-            : '直接跳转'}
-        </tspan>
         
         {/* 显示变量更新信息 */}
         {data?.updateVariables && Object.keys(data.updateVariables).length > 0 && (

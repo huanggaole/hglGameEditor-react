@@ -15,9 +15,17 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
   const [note, setNote] = useState(node.data.note || '');
   const [showVariableSelector, setShowVariableSelector] = useState(false);
   const [variables, setVariables] = useState<CustomVariable[]>([]);
+  const [transitionType, setTransitionType] = useState(node.data.transitionType || 'goto'); // 默认为直接跳转
+  const [buttons, setButtons] = useState<{title: string}[]>(node.data.buttons || []);
   
   // 判断是否为收纳节点或出口节点
   const isContainerNode = node.type === NODE_TYPES.CONTAINER || node.type === NODE_TYPES.EXIT;
+  // 判断是否为情节节点
+  const isPlotNode = node.type === NODE_TYPES.PLOT;
+  // 判断是否为开始节点
+  const isStartNode = node.type === NODE_TYPES.START;
+  // 判断是否需要跳转方式设置（情节节点和开始节点都需要）
+  const needsTransitionType = isPlotNode || isStartNode;
 
   useEffect(() => {
     const appVariables = window.appVariables || [];
@@ -32,6 +40,15 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
         mname,
         note
       });
+    } else if (isPlotNode || isStartNode) {
+      // 情节节点和开始节点保存跳转方式和按钮信息
+      updateNode(node.id, {
+        ...node.data,
+        mname,
+        showInfo,
+        transitionType,
+        buttons: transitionType === 'btnsto' ? buttons : []
+      });
     } else {
       updateNode(node.id, {
         ...node.data,
@@ -40,6 +57,25 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
       });
     }
     onClose();
+  };
+
+  // 添加按钮
+  const addButton = () => {
+    setButtons([...buttons, { title: '' }]);
+  };
+
+  // 更新按钮标题
+  const updateButtonTitle = (index: number, title: string) => {
+    const newButtons = [...buttons];
+    newButtons[index].title = title;
+    setButtons(newButtons);
+  };
+
+  // 删除按钮
+  const removeButton = (index: number) => {
+    const newButtons = [...buttons];
+    newButtons.splice(index, 1);
+    setButtons(newButtons);
   };
 
   const addVariableReference = (variable: CustomVariable) => {
@@ -136,50 +172,129 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
           />
         </div>
       ) : (
-        <div style={{ marginBottom: '10px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-            <label>显示信息 (showInfo):</label>
-            <button 
-              onClick={() => setShowVariableSelector(!showVariableSelector)}
-              style={{
-                backgroundColor: '#4a90e2',
-                color: 'white',
-                border: 'none',
+        <>
+          <div style={{ marginBottom: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+              <label>显示信息 (showInfo):</label>
+              <button 
+                onClick={() => setShowVariableSelector(!showVariableSelector)}
+                style={{
+                  backgroundColor: '#4a90e2',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '2px 8px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                }}
+              >
+                显示变量
+              </button>
+            </div>
+            <textarea 
+              value={showInfo} 
+              onChange={(e) => setShowInfo(e.target.value)} 
+              style={{ width: '100%', padding: '5px', minHeight: '100px' }} 
+            />
+            {showVariableSelector && (
+              <div style={{
+                marginTop: '10px',
+                border: '1px solid #ccc',
                 borderRadius: '4px',
-                padding: '2px 8px',
-                fontSize: '12px',
-                cursor: 'pointer',
-              }}
-            >
-              显示变量
-            </button>
+                padding: '10px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                backgroundColor: 'white'
+              }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>选择要显示的变量:</div>
+                {variables.length === 0 ? (
+                  <div style={{ color: '#666', fontStyle: 'italic' }}>
+                    暂无变量，请先在"变量设置"中添加变量
+                  </div>
+                ) : (
+                  <div>{renderVariableOptions(variables)}</div>
+                )}
+              </div>
+            )}
           </div>
-          <textarea 
-            value={showInfo} 
-            onChange={(e) => setShowInfo(e.target.value)} 
-            style={{ width: '100%', padding: '5px', minHeight: '100px' }} 
-          />
-          {showVariableSelector && (
-            <div style={{
-              marginTop: '10px',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
-              padding: '10px',
-              maxHeight: '200px',
-              overflowY: 'auto',
-              backgroundColor: 'white'
-            }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>选择要显示的变量:</div>
-              {variables.length === 0 ? (
-                <div style={{ color: '#666', fontStyle: 'italic' }}>
-                  暂无变量，请先在"变量设置"中添加变量
+          
+          {needsTransitionType && (
+            <div style={{ marginBottom: '10px' }}>
+              <label style={{ display: 'block', marginBottom: '5px' }}>跳转方式:</label>
+              <select
+                value={transitionType}
+                onChange={(e) => setTransitionType(e.target.value)}
+                style={{ width: '100%', padding: '5px', marginBottom: '10px' }}
+              >
+                <option value="goto">直接跳转</option>
+                <option value="btnsto">按钮跳转</option>
+              </select>
+              
+              {transitionType === 'btnsto' && (
+                <div style={{ marginTop: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                    <label>按钮设置:</label>
+                    <button 
+                      onClick={addButton}
+                      style={{
+                        backgroundColor: '#4a90e2',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '2px 8px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      添加按钮
+                    </button>
+                  </div>
+                  
+                  {buttons.length === 0 ? (
+                    <div style={{ color: '#666', fontStyle: 'italic', marginTop: '5px' }}>
+                      请添加至少一个按钮
+                    </div>
+                  ) : (
+                    <div>
+                      {buttons.map((button, index) => (
+                        <div key={index} style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          marginBottom: '5px',
+                          backgroundColor: '#f5f5f5',
+                          padding: '5px',
+                          borderRadius: '4px'
+                        }}>
+                          <input
+                            type="text"
+                            value={button.title}
+                            onChange={(e) => updateButtonTitle(index, e.target.value)}
+                            placeholder="按钮标题"
+                            style={{ flex: 1, marginRight: '5px', padding: '5px' }}
+                          />
+                          <button
+                            onClick={() => removeButton(index)}
+                            style={{
+                              backgroundColor: '#ff4d4f',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              padding: '2px 8px',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            删除
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div>{renderVariableOptions(variables)}</div>
               )}
             </div>
           )}
-        </div>
+        </>
       )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '15px' }}>

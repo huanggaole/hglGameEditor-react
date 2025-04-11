@@ -67,17 +67,121 @@ const nodeStyles = {
 
 // 开始节点
 export const StartNode = ({ data, id, selected }: NodeProps) => {
+  // 获取跳转方式，默认为直接跳转
+  const transitionType = data.transitionType || 'goto';
+  // 获取按钮列表，只有在按钮跳转模式下才使用
+  const buttons = transitionType === 'btnsto' ? (data.buttons || []) : [];
+  
   return (
     <div style={{
       ...nodeStyles.start,
       border: selected ? '3px solid #ff0000' : '2px solid #ff0000',
       position: 'relative'
     }}>
-      <Handle type="source" position={Position.Bottom} />
       <div>
         <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{data.mname || data.label}</div>
         {data.showInfo && <div>显示信息: {truncateText(data.showInfo)}</div>}
       </div>
+      
+      {/* 根据跳转方式显示不同的source Handle */}
+      {transitionType === 'goto' ? (
+        // 直接跳转 - 黑色Handle
+        <div style={{ position: 'relative' }}>
+          <Handle 
+            type="source" 
+            position={Position.Bottom} 
+            style={{ 
+              background: '#000000',
+              bottom: '-15px', }} 
+          />
+          <div
+            style={{
+              position: 'absolute',
+              left: '50%',
+              bottom: '-30px',
+              transform: 'translateX(-50%)',
+              fontSize: '10px',
+              color: '#000000',
+              textAlign: 'center',
+              width: '100px',
+              wordBreak: 'break-word'
+            }}
+          >
+            直接跳转
+          </div>
+        </div>
+      ) : (
+        // 按钮跳转 - 多个蓝色Handle
+        <div>
+          {buttons.length > 0 ? (
+            buttons.map((button, index) => {
+              // 计算每个Handle的位置，均匀分布在底部
+              const totalButtons = buttons.length;
+              const position = index / (totalButtons - 1 || 1); // 0到1之间的值
+              const x = position * 100; // 转换为百分比
+              
+              return (
+                <div key={index} style={{ position: 'relative' }}>
+                  <Handle
+                    type="source"
+                    position={Position.Bottom}
+                    id={`button-${index}`}
+                    style={{
+                      left: `${x}%`,
+                      bottom: '-15px',
+                      transform: 'translateX(-50%)',
+                      background: '#4a90e2' // 蓝色
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: `${x}%`,
+                      bottom: '-30px',
+                      transform: 'translateX(-50%)',
+                      fontSize: '10px',
+                      color: '#4a90e2',
+                      textAlign: 'center',
+                      width: `${100 / totalButtons}%`,
+                      wordBreak: 'break-word'
+                    }}
+                  >
+                    {button.title || `按钮${index+1}`}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            // 如果没有按钮，显示一个默认的蓝色Handle
+            <div style={{ position: 'relative' }}>
+              <Handle 
+                type="source" 
+                position={Position.Bottom} 
+                style={{
+                  background: '#4a90e2', 
+                  bottom: '-15px'
+                }} 
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  bottom: '-30px',
+                  transform: 'translateX(-50%)',
+                  fontSize: '10px',
+                  color: '#4a90e2',
+                  textAlign: 'center',
+                  width: '100px',
+                  wordBreak: 'break-word'
+                }}
+              >
+                未设置按钮
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      
       {selected && data.onEdit && data.onDelete && (
         <NodeControls 
           node={{ id, data, type: 'start', position: { x: 0, y: 0 } }} 
@@ -91,6 +195,11 @@ export const StartNode = ({ data, id, selected }: NodeProps) => {
 
 // 情节节点
 export const PlotNode = ({ data, id, selected }: NodeProps) => {
+  // 获取跳转方式，默认为直接跳转
+  const transitionType = data.transitionType || 'goto';
+  // 获取按钮列表，只有在按钮跳转模式下才使用
+  const buttons = transitionType === 'btnsto' ? (data.buttons || []) : [];
+  
   return (
     <div style={{
       ...nodeStyles.plot,
@@ -102,7 +211,103 @@ export const PlotNode = ({ data, id, selected }: NodeProps) => {
         <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{data.mname || data.label}</div>
         {data.showInfo && <div>显示信息: {truncateText(data.showInfo)}</div>}
       </div>
-      <Handle type="source" position={Position.Bottom} />
+      
+      {/* 根据跳转方式显示不同的source Handle */}
+      {transitionType === 'goto' ? (
+        // 直接跳转 - 黑色Handle
+        <div style={{ position: 'relative' }}>
+          <Handle 
+            type="source" 
+            position={Position.Bottom} 
+            style={{ 
+              background: '#000000',
+              bottom: '-15px', }} 
+          />
+          <div
+            style={{
+              position: 'absolute',
+              left: '50%',
+              bottom: '-30px',
+              transform: 'translateX(-50%)',
+              fontSize: '10px',
+              color: '#000000',
+              textAlign: 'center',
+              width: '100px',
+              wordBreak: 'break-word'
+            }}
+          >
+            直接跳转
+          </div>
+        </div>
+      ) : (
+        // 按钮跳转 - 多个蓝色Handle
+        <div>
+          {buttons.length > 0 ? (
+            buttons.map((button, index) => {
+              // 计算每个Handle的位置，均匀分布在底部
+              const totalButtons = buttons.length;
+              const position = index / (totalButtons - 1 || 1); // 0到1之间的值
+              const x = position * 100; // 转换为百分比
+              
+              return (
+                <div key={index} style={{ position: 'relative' }}>
+                  <Handle
+                    type="source"
+                    position={Position.Bottom}
+                    id={`button-${index}`}
+                    style={{
+                      left: `${x}%`,
+                      bottom: '-15px',
+                      transform: 'translateX(-50%)',
+                      background: '#4a90e2' // 蓝色
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: `${x}%`,
+                      bottom: '-30px',
+                      transform: 'translateX(-50%)',
+                      fontSize: '10px',
+                      color: '#4a90e2',
+                      textAlign: 'center',
+                      width: `${100 / totalButtons}%`,
+                      wordBreak: 'break-word'
+                    }}
+                  >
+                    {button.title || `按钮${index+1}`}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            // 如果没有按钮，显示一个默认的蓝色Handle
+            <div style={{ position: 'relative' }}>
+              <Handle 
+                type="source" 
+                position={Position.Bottom} 
+                style={{ background: '#4a90e2' }} 
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  bottom: '-30px',
+                  transform: 'translateX(-50%)',
+                  fontSize: '10px',
+                  color: '#4a90e2',
+                  textAlign: 'center',
+                  width: '100px',
+                  wordBreak: 'break-word'
+                }}
+              >
+                未设置按钮
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      
       {selected && data.onEdit && data.onDelete && (
         <NodeControls 
           node={{ id, data, type: 'plot', position: { x: 0, y: 0 } }} 
