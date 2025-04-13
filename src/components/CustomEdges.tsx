@@ -31,13 +31,24 @@ export const CustomEdge: React.FC<EdgeProps> = ({
     
     // 创建一个自定义的SVG路径
     // 从源点开始，先向右，然后向上，再向左，最后连回目标点
-    edgePath = `M ${sourceX} ${sourceY} 
+    if(sourceX >= targetX){
+      edgePath = `M ${sourceX} ${sourceY} 
                  C ${sourceX} ${sourceY + extendUp}, 
                    ${sourceX + extendRight} ${sourceY + extendUp}, 
                    ${sourceX + extendRight} ${(sourceY + targetY)/2} 
                  C ${sourceX + extendRight} ${targetY - extendUp}, 
                    ${sourceX} ${targetY - extendUp}, 
                    ${targetX} ${targetY}`;
+    } else {
+      edgePath = `M ${sourceX} ${sourceY} 
+                 C ${sourceX} ${sourceY + extendUp}, 
+                   ${sourceX - extendRight} ${sourceY + extendUp}, 
+                   ${sourceX - extendRight} ${(sourceY + targetY)/2} 
+                 C ${sourceX - extendRight} ${targetY - extendUp}, 
+                   ${sourceX} ${targetY - extendUp}, 
+                   ${targetX} ${targetY}`;
+    }
+    
     
     // 设置标签位置在路径的顶部中间
     labelX = sourceX + extendRight/2;

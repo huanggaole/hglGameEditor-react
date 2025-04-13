@@ -118,7 +118,7 @@ export const StartNode = ({ data, id, selected }: NodeProps) => {
               // 计算每个Handle的位置，均匀分布在底部
               const totalButtons = buttons.length;
               const position = index / (totalButtons - 1 || 1); // 0到1之间的值
-              const x = position * 100; // 转换为百分比
+              const x = ((buttons.length > 1) ? (position * 100) : 50); // 转换为百分比
               
               return (
                 <div key={index} style={{ position: 'relative' }}>
@@ -247,7 +247,7 @@ export const PlotNode = ({ data, id, selected }: NodeProps) => {
               // 计算每个Handle的位置，均匀分布在底部
               const totalButtons = buttons.length;
               const position = index / (totalButtons - 1 || 1); // 0到1之间的值
-              const x = position * 100; // 转换为百分比
+              const x = ((buttons.length > 1) ? (position * 100) : 50); // 转换为百分比
               
               return (
                 <div key={index} style={{ position: 'relative' }}>
@@ -367,7 +367,7 @@ export const ContainerNode = ({ data, id, selected }: NodeProps) => {
         // 计算每个Handle的位置，均匀分布在底部
         const totalExits = exitNodes.length;
         const position = index / (totalExits - 1 || 1); // 0到1之间的值
-        const x = position * 100; // 转换为百分比
+        const x = ((exitNode.length > 1) ? (position * 100) : 50); // 转换为百分比
         
         return (
           <div key={exitNode.id} style={{ position: 'relative' }}>
