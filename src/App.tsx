@@ -17,7 +17,7 @@ import { EdgeControls } from './components/NodeEdgeControls'
 import EdgeEditor from './components/edgeeditor'
 import NodeEditor from './components/nodeeditor'
 import { CustomEdge } from './components/CustomEdges'
-import PreviewComponent from './components/PreviewComponent'
+import { PreviewComponent } from './components/previewer';
 import VariableEditor, { CustomVariable } from './components/VariableEditor'
 import OperPanel from './components/operpanel'
 
