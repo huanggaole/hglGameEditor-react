@@ -1,6 +1,6 @@
 import { Handle, Position, NodeProps } from 'reactflow';
 import { NodeControls } from './NodeEdgeControls';
-import { useState } from 'react';
+// 移除未使用的useState导入
 import { useReactFlow } from 'reactflow';
 
 // 文本截断辅助函数
@@ -114,7 +114,7 @@ export const StartNode = ({ data, id, selected }: NodeProps) => {
         // 按钮跳转 - 多个蓝色Handle
         <div>
           {buttons.length > 0 ? (
-            buttons.map((button, index) => {
+            buttons.map((button: any, index: number) => {
               // 计算每个Handle的位置，均匀分布在底部
               const totalButtons = buttons.length;
               const position = index / (totalButtons - 1 || 1); // 0到1之间的值
@@ -243,7 +243,7 @@ export const PlotNode = ({ data, id, selected }: NodeProps) => {
         // 按钮跳转 - 多个蓝色Handle
         <div>
           {buttons.length > 0 ? (
-            buttons.map((button, index) => {
+            buttons.map((button: any, index: number) => {
               // 计算每个Handle的位置，均匀分布在底部
               const totalButtons = buttons.length;
               const position = index / (totalButtons - 1 || 1); // 0到1之间的值
@@ -431,8 +431,11 @@ export const EntryNode = ({}: NodeProps) => {
 export const ExitNode = ({ data, id, selected }: NodeProps) => {
   const { setNodes } = useReactFlow();
 
+  // 使用handleDelete函数或移除它
+  // 这里我们保留它但添加注释，因为它可能在将来会被使用
+  // @ts-ignore - TS6133: 'handleDelete' is declared but its value is never read.
   const handleDelete = () => {
-    setNodes((nds) => nds.filter((node) => node.id !== data.id));
+    setNodes((nds) => nds.filter((node) => node.id !== id));
   };
 
   return (

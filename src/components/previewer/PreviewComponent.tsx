@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Node, Edge } from 'reactflow';
+// 删除未使用的导入
 import { CustomVariable } from '../VariableEditor';
 import { PreviewType, ButtonInfo, PreviewComponentProps } from './types';
 import { deepCopyVariables, parseVariables, updateVariable } from './VariableUtils';

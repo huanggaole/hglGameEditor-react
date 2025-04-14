@@ -14,7 +14,8 @@ interface OperPanelProps {
   setEdges: (edges: React.SetStateAction<Edge[]>) => void;
 }
 
-const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge, createNode, currentPath, setCurrentPath, currentContainerId, setCurrentContainerId, setEdges }) => {
+// 移除未使用的setEdges参数
+const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge, createNode, currentPath, setCurrentPath, currentContainerId, setCurrentContainerId }) => {
   // 处理返回上一级
   const handleGoBack = () => {
     if (currentPath.length > 1) {

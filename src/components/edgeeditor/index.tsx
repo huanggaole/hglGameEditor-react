@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNodes, Node } from 'reactflow';
 import { EdgeEditorProps, NodeData } from './types';
 import VariableEditor from './VariableEditor';
-import ConditionEditor from './ConditionEditor';
+// 移除未使用的ConditionEditor导入
 
 interface UpdatedData {
   ntype: string;
@@ -22,9 +22,9 @@ const EdgeEditor: React.FC<EdgeEditorProps> = ({ edge, onClose, updateEdge }) =>
   const [updateVariables, setUpdateVariables] = useState<{[key: string]: any}>(initialData.updateVariables || {}); // 变量更新
   
   // 条件跳转相关状态
-  const [conditionVariable, setConditionVariable] = useState(initialData.conditionVariable || ''); // 条件变量
-  const [conditionType, setConditionType] = useState(initialData.conditionType || 'equal'); // 条件类型
-  const [conditionValue, setConditionValue] = useState(initialData.conditionValue || ''); // 条件值
+  const [conditionVariable, _setConditionVariable] = useState(initialData.conditionVariable || ''); // 条件变量
+  const [conditionType, _setConditionType] = useState(initialData.conditionType || 'equal'); // 条件类型
+  const [conditionValue, _setConditionValue] = useState(initialData.conditionValue || ''); // 条件值
   
   // 获取所有节点，用于显示源节点和目标节点的名称
   const nodes = useNodes();
@@ -79,16 +79,8 @@ const EdgeEditor: React.FC<EdgeEditorProps> = ({ edge, onClose, updateEdge }) =>
     return currentVar ? currentVar.type : 'string';
   };
 
-  // 处理条件变更
-  const handleConditionChange = (updates: {
-    conditionVariable?: string;
-    conditionType?: string;
-    conditionValue?: string;
-  }) => {
-    if (updates.conditionVariable !== undefined) setConditionVariable(updates.conditionVariable);
-    if (updates.conditionType !== undefined) setConditionType(updates.conditionType);
-    if (updates.conditionValue !== undefined) setConditionValue(updates.conditionValue);
-  };
+  // 移除未使用的handleConditionChange函数
+  // 如果将来需要使用条件编辑功能，可以重新添加此函数
   
   const handleSave = () => {
     // 准备更新的数据

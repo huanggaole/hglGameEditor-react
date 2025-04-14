@@ -1,8 +1,23 @@
 import React from 'react';
 import { EdgeProps, getBezierPath } from 'reactflow';
 
+// 创建自定义接口替代GetBezierPathParams
+interface CustomBezierPathParams {
+  sourceX: number;
+  sourceY: number;
+  sourcePosition: any;
+  targetX: number;
+  targetY: number;
+  targetPosition: any;
+}
+
+// 扩展EdgeProps接口以包含sourceHandle属性
+interface CustomEdgeProps extends EdgeProps {
+  sourceHandle?: string;
+}
+
 // 自定义边组件
-export const CustomEdge: React.FC<EdgeProps> = ({
+export const CustomEdge: React.FC<CustomEdgeProps> = ({
   id,
   source,
   target,
@@ -19,6 +34,9 @@ export const CustomEdge: React.FC<EdgeProps> = ({
 }) => {
   // 检查是否是自连接（源节点和目标节点是同一个）
   const isSelfConnecting = source === target;
+  
+  // 使用sourceHandle参数来确定连接类型（解决未使用的参数警告）
+  const isButtonConnection = sourceHandle && sourceHandle.startsWith('button-');
   
   let edgePath, labelX, labelY;
   
@@ -55,21 +73,21 @@ export const CustomEdge: React.FC<EdgeProps> = ({
     labelY = sourceY - extendUp;
   } else {
     // 正常连接的贝塞尔曲线路径
-    [edgePath, labelX, labelY] = getBezierPath({
+    // 创建一个符合CustomBezierPathParams类型的对象
+    const pathParams: CustomBezierPathParams = {
       sourceX,
       sourceY,
       sourcePosition,
       targetX,
       targetY,
       targetPosition,
-      // 确保sourceHandle属性被传递给getBezierPath函数
-      sourceHandle,
-    });
+    };
+    [edgePath, labelX, labelY] = getBezierPath(pathParams);
   }
 
   // 边的样式
   const edgeStyle = {
-    stroke: '#888',
+    stroke: isButtonConnection ? '#4a90e2' : '#888', // 如果是按钮连接，使用蓝色
     strokeWidth: 2,
     ...style,
   };

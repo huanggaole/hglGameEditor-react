@@ -21,7 +21,7 @@ import { PreviewComponent } from './components/previewer';
 import VariableEditor, { CustomVariable } from './components/VariableEditor'
 import OperPanel from './components/operpanel'
 
-import { NODE_TYPES, NODE_LABELS } from './components/nodeeditor/constants'
+import { NODE_TYPES } from './components/nodeeditor/constants'
 
 // 定义自定义节点类型映射
 const nodeTypes = {
