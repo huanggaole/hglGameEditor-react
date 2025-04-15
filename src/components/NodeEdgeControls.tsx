@@ -5,6 +5,7 @@ interface NodeControlsProps {
   node: Node;
   onEdit: (node: Node) => void;
   onDelete: (nodeId: string) => void;
+  onCopy?: (node: Node) => void;
 }
 
 interface EdgeControlsProps {
@@ -14,7 +15,7 @@ interface EdgeControlsProps {
 }
 
 // 节点操作按钮组件
-export const NodeControls: React.FC<NodeControlsProps> = ({ node, onEdit, onDelete }) => {
+export const NodeControls: React.FC<NodeControlsProps> = ({ node, onEdit, onDelete, onCopy }) => {
   return (
     <div
       className="node-controls"
@@ -61,6 +62,25 @@ export const NodeControls: React.FC<NodeControlsProps> = ({ node, onEdit, onDele
           }}
         >
           进入
+        </button>
+      )}
+      {node.type !== 'start' && node.type !== 'entry' && onCopy && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onCopy(node);
+          }}
+          style={{
+            backgroundColor: '#9c27b0',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            padding: '2px 8px',
+            fontSize: '12px',
+            cursor: 'pointer',
+          }}
+        >
+          复制
         </button>
       )}
       {node.type !== 'start' && (

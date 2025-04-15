@@ -1,7 +1,20 @@
 import { Node, Edge } from 'reactflow';
 import { NODE_LABELS, NODE_TYPES } from '../nodeeditor/constants';
+import { resetCounters } from '../../app/initialState';
 
-export const handleNew = (setNodes: (nodes: Node[]) => void, setEdges: (edges: Edge[]) => void, setVariables?: (variables: any[]) => void) => {
+export const handleNew = (setNodes: (nodes: Node[]) => void, setEdges: (edges: Edge[]) => void, setVariables?: (variables: any[]) => void, setCurrentPath?: (path: {id: string, name: string}[]) => void, setCurrentContainerId?: (id: string | null) => void) => {
+  // 重置节点和边的ID计数器
+  resetCounters();
+  
+  // 如果提供了setCurrentPath函数，重置当前路径到root根目录
+  if (setCurrentPath) {
+    setCurrentPath([{id: 'root', name: 'root'}]);
+  }
+  
+  // 重置当前容器ID为null，确保显示根目录内容
+  if (setCurrentContainerId) {
+    setCurrentContainerId(null);
+  }
   setNodes([{
     id: '1',
     position: { x: 0, y: 0 },

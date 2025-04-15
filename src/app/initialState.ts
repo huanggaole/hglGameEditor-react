@@ -1,4 +1,4 @@
-import { Node, Edge } from 'reactflow';
+import { Node, Edge, Connection } from 'reactflow';
 import { NODE_TYPES, NODE_LABELS } from '../components/nodeeditor/constants';
 
 const initialNodes: Node[] = [
@@ -20,6 +20,9 @@ const initialEdges: Edge[] = [];
 // 全局节点ID计数器
 let nodeIdCounter = 1;
 
+// 全局边ID计数器
+let edgeIdCounter = 1;
+
 // 获取当前节点中的最大ID值
 const getMaxNodeId = (nodes: Node[]) => {
   let maxId = 0;
@@ -32,7 +35,7 @@ const getMaxNodeId = (nodes: Node[]) => {
   return maxId;
 };
 
-const createNode = (type: string, position: {x: number, y: number}, existingNodes: Node[] = [], parentId: string | null = null) => {
+const createNode = (type: string, position: {x: number, y: number}, existingNodes: Node[] = [], parentId: string | null = null, createEntryNode: boolean = true) => {
   // 确保nodeIdCounter大于现有节点中的最大ID
   if (existingNodes.length > 0 && nodeIdCounter <= getMaxNodeId(existingNodes)) {
     nodeIdCounter = getMaxNodeId(existingNodes) + 1;
@@ -64,8 +67,8 @@ const createNode = (type: string, position: {x: number, y: number}, existingNode
     type
   };
   
-  // 如果创建的是收纳节点，自动创建一个入口节点作为其子节点
-  if (type === NODE_TYPES.CONTAINER) {
+  // 如果创建的是收纳节点，并且createEntryNode为true，自动创建一个入口节点作为其子节点
+  if (type === NODE_TYPES.CONTAINER && createEntryNode) {
     // 创建入口节点，位置在收纳节点内部偏上的位置
     const entryPosition = { x: position.x + 50, y: position.y + 80 };
     const entryNode = {
@@ -88,4 +91,37 @@ const createNode = (type: string, position: {x: number, y: number}, existingNode
   return node;
 };
 
-export { initialNodes, initialEdges, createNode };
+// 创建边的函数
+const createEdge = (params: Connection, existingEdges: Edge[] = [], data: any = {}) => {
+  // 确保edgeIdCounter大于现有边中的最大ID
+  if (existingEdges.length > 0) {
+    const maxId = Math.max(...existingEdges.map(edge => {
+      const edgeId = parseInt(edge.id.replace('e', ''));
+      return !isNaN(edgeId) ? edgeId : 0;
+    }));
+    
+    if (edgeIdCounter <= maxId) {
+      edgeIdCounter = maxId + 1;
+    }
+  }
+  
+  // 使用累加器生成边ID
+  const id = `e${edgeIdCounter++}`;
+  
+  // 创建新边
+  const newEdge: Edge = {
+    ...params,
+    id,
+    data: data
+  };
+  
+  return newEdge;
+};
+
+// 重置节点和边的ID计数器函数
+const resetCounters = () => {
+  nodeIdCounter = 1;
+  edgeIdCounter = 1;
+};
+
+export { initialNodes, initialEdges, createNode, createEdge, resetCounters };

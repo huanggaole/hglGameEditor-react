@@ -9,6 +9,7 @@ import ReactFlow, {
   useEdgesState,
   useNodesState,
   getConnectedEdges,
+  XYPosition,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import MenuBar from './components/menu/MenuBar'
@@ -38,7 +39,7 @@ const edgeTypes = {
   default: CustomEdge
 }
 
-import { initialNodes, initialEdges, createNode } from './app/initialState'
+import { initialNodes, initialEdges, createNode, createEdge } from './app/initialState'
 
 
 function App() {
@@ -54,6 +55,7 @@ function App() {
   const [variables, setVariables] = useState<CustomVariable[]>([])
   const [currentContainerId, setCurrentContainerId] = useState<string | null>(null)
   const [currentPath, setCurrentPath] = useState<{id: string, name: string}[]>([{id: 'root', name: 'root'}])
+  const [copiedNode, setCopiedNode] = useState<Node | null>(null)
 
   // 将变量列表添加到window对象，使其可以在NodeEditor中访问
   useEffect(() => {
@@ -117,8 +119,27 @@ function App() {
       
       // 递归删除子节点（如果子节点中有收纳节点）
       childNodeIds.forEach(childId => {
-        deleteNode(childId);
+        // 获取子节点
+        const childNode = nodes.find(node => node.id === childId);
+        // 如果子节点也是收纳节点，递归删除
+        if (childNode && childNode.type === NODE_TYPES.CONTAINER) {
+          deleteNode(childId);
+        }
       });
+      
+      // 找出所有子节点之间的边（完全在容器内部的边）
+      const internalEdges = edges.filter(edge => {
+        const sourceNode = nodes.find(node => node.id === edge.source);
+        const targetNode = nodes.find(node => node.id === edge.target);
+        return sourceNode?.data.parentId === nodeId && targetNode?.data.parentId === nodeId;
+      });
+      
+      // 删除内部边
+      const internalEdgeIds = internalEdges.map(edge => edge.id);
+      setEdges(eds => eds.filter(edge => !internalEdgeIds.includes(edge.id)));
+      
+      // 删除所有子节点
+      setNodes(nds => nds.filter(node => node.data.parentId !== nodeId));
     }
     
     // 找出与该节点相连的所有边
@@ -160,29 +181,162 @@ function App() {
         }
       }
       
-      // 创建带有跳转方式的边
-      const edgeWithType = {
-        ...params,
-        data: { ntype, btnname, updateVariables: {} }
-      };
+      // 边的数据
+      const edgeData = { ntype, btnname, updateVariables: {} };
       
-      // 添加边
-      const newEdge = addEdge(edgeWithType, edges)[edges.length];
+      // 使用createEdge函数创建新边
+      const newEdge = createEdge(params, edges, edgeData);
       
       // 设置新添加的边为编辑状态，自动弹出编辑框
       setTimeout(() => {
         setEditingEdge(newEdge);
       }, 100);
       
-      return setEdges((eds) => addEdge(edgeWithType, eds));
+      // 添加新边到边集合
+      return setEdges((eds) => [...eds, newEdge]);
     },
     [edges, setEdges, nodes]
   )
 
+  // 复制节点函数
+  const copyNode = useCallback((node: Node) => {
+    // 只复制非开始节点和非入口节点
+    if (node.type !== 'start' && node.type !== 'entry') {
+      setCopiedNode(node);
+      console.log('节点已复制:', node.id);
+    }
+  }, []);
+
+  // 粘贴节点函数
+  const pasteNode = useCallback(() => {
+    if (!copiedNode || !copiedNode.type) return;
+    
+    // 计算新节点位置，在原节点位置基础上偏移一点
+    const newPosition: XYPosition = {
+      x: copiedNode.position.x + 50,
+      y: copiedNode.position.y + 50
+    };
+    
+    // 使用createNode函数创建新节点，它会使用累加器生成ID
+    // 如果是收纳节点，设置createEntryNode为false，避免自动创建入口节点
+    const newNode = createNode(
+      copiedNode.type,
+      newPosition,
+      nodes,
+      currentContainerId,
+      copiedNode.type !== NODE_TYPES.CONTAINER // 只有非收纳节点才自动创建入口节点
+    );
+    
+    // 复制原节点的数据到新节点
+    newNode.data = {
+      ...newNode.data,
+      ...copiedNode.data,
+      parentId: currentContainerId, // 确保在当前容器中创建
+      // 保留原始的回调函数
+      onEdit: copiedNode.data.onEdit,
+      onDelete: copiedNode.data.onDelete,
+      onCopy: copiedNode.data.onCopy
+    };
+    
+    // 创建一个ID映射表，用于更新边的引用
+    const idMapping: {[key: string]: string} = {
+      [copiedNode.id]: newNode.id
+    };
+    
+    // 要添加的新节点和边
+    const newNodes: Node[] = [newNode];
+    const newEdges: Edge[] = [];
+    
+    // 如果是收纳节点，需要复制其所有子节点和子边
+    if (copiedNode.type === NODE_TYPES.CONTAINER) {
+      // 找出所有子节点
+      const childNodes = nodes.filter(node => node.data.parentId === copiedNode.id);
+      
+      // 复制每个子节点
+      childNodes.forEach(childNode => {
+        if (!childNode || !childNode.type) {
+          console.warn(`跳过无效子节点: ${childNode?.id}`);
+          return;
+        }
+        // 计算子节点的新位置，保持相对位置不变
+        const childOffset = {
+          x: childNode.position.x - copiedNode.position.x,
+          y: childNode.position.y - copiedNode.position.y
+        };
+        
+        const newChildPosition = {
+          x: newNode.position.x + childOffset.x,
+          y: newNode.position.y + childOffset.y
+        };
+        
+        // 创建新的子节点，使用createNode函数确保ID使用累加器生成
+        const newChildNode = createNode(
+          childNode.type,
+          newChildPosition,
+          [...nodes, ...newNodes],
+          newNode.id // 设置父节点为新创建的收纳节点
+        );
+        
+        // 复制子节点的数据
+        newChildNode.data = {
+          ...newChildNode.data,
+          ...childNode.data,
+          parentId: newNode.id, // 确保父节点ID正确
+          // 保留原始的回调函数
+          onEdit: childNode.data.onEdit,
+          onDelete: childNode.data.onDelete,
+          onCopy: childNode.data.onCopy
+        };
+        
+        // 添加到ID映射表
+        idMapping[childNode.id] = newChildNode.id;
+        
+        // 添加到新节点列表
+        newNodes.push(newChildNode);
+        
+        // 如果子节点也是收纳节点，递归复制其子节点
+        if (childNode.type === NODE_TYPES.CONTAINER) {
+          // 这里可以实现递归复制，但为了简化，我们只处理一层子节点
+          // 在实际应用中，可以使用递归函数处理多层嵌套
+        }
+      });
+      
+      // 找出所有在收纳节点内部的边
+      const internalEdges = edges.filter(edge => {
+        const sourceNode = nodes.find(node => node.id === edge.source);
+        const targetNode = nodes.find(node => node.id === edge.target);
+        return sourceNode?.data.parentId === copiedNode.id && 
+               targetNode?.data.parentId === copiedNode.id;
+      });
+      
+      // 复制每条内部边，更新源节点和目标节点的引用
+      internalEdges.forEach(edge => {
+        // 创建新边，更新源节点和目标节点的ID
+        const newEdge: Edge = {
+          ...edge,
+          id: `e${nodes.length + newNodes.length + newEdges.length + 1}`, // 使用简短的累加ID
+          source: idMapping[edge.source], // 使用ID映射表更新源节点引用
+          target: idMapping[edge.target], // 使用ID映射表更新目标节点引用
+          // 复制边的数据
+          data: { ...edge.data }
+        };
+        
+        // 添加到新边列表
+        newEdges.push(newEdge);
+      });
+    }
+    
+    // 添加所有新节点和新边
+    setNodes(nds => [...nds, ...newNodes]);
+    setEdges(eds => [...eds, ...newEdges]);
+    
+    console.log(`节点已粘贴: ${newNode.id}，共复制了 ${newNodes.length} 个节点和 ${newEdges.length} 条边`);
+  }, [copiedNode, setNodes, setEdges, currentContainerId, nodes, edges]);
+
   // 处理键盘事件
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // 如果正在编辑节点或边，则不处理Delete键，避免误删节点或边
+      // 如果正在编辑节点或边，则不处理键盘事件，避免冲突
       if (editingNode || editingEdge) {
         return;
       }
@@ -199,6 +353,12 @@ function App() {
         } else if (selectedEdge) {
           setEditingEdge(selectedEdge);
         }
+      } else if (event.key === 'c' && event.ctrlKey) { // Ctrl+C 复制节点
+        if (selectedNode && selectedNode.type !== 'start' && selectedNode.type !== 'entry') {
+          copyNode(selectedNode);
+        }
+      } else if (event.key === 'v' && event.ctrlKey) { // Ctrl+V 粘贴节点
+        pasteNode();
       }
     };
 
@@ -206,7 +366,7 @@ function App() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedNode, selectedEdge, deleteNode, deleteEdge]);
+  }, [selectedNode, selectedEdge, deleteNode, deleteEdge, copyNode, pasteNode]);
 
   // 处理节点点击事件
   const onNodeClick = useCallback((_event: React.MouseEvent, node: Node) => {
@@ -255,6 +415,8 @@ function App() {
         setSelectedEdge={setSelectedEdge}
         setShowPreview={setShowPreview}
         setShowVariableEditor={setShowVariableEditor}
+        setCurrentPath={setCurrentPath}
+        setCurrentContainerId={setCurrentContainerId}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'row' }}>
         <OperPanel 
@@ -276,6 +438,7 @@ function App() {
                 ...node.data,
                 onEdit: (node: Node) => setEditingNode(node),
                 onDelete: deleteNode,
+                onCopy: copyNode,
                 onEnter: (nodeId: string) => {
                   // 处理进入收纳节点的逻辑
                   setCurrentContainerId(nodeId);

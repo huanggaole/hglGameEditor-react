@@ -13,6 +13,8 @@ interface MenuBarProps {
   setSelectedEdge: (edge: Edge | null) => void;
   setShowPreview: (show: boolean) => void;
   setShowVariableEditor: (show: boolean) => void;
+  setCurrentPath?: (path: {id: string, name: string}[]) => void;
+  setCurrentContainerId?: (id: string | null) => void;
 }
 
 const MenuBar: React.FC<MenuBarProps> = ({
@@ -24,12 +26,15 @@ const MenuBar: React.FC<MenuBarProps> = ({
   setVariables,
   setSelectedEdge,
   setShowPreview,
-  setShowVariableEditor
+  setShowVariableEditor,
+  setCurrentPath,
+  setCurrentContainerId
 }) => {
   return (
     <div style={{ padding: '10px', backgroundColor: '#f0f0f0', display: 'flex', gap: '10px' }}>
       <button onClick={() => {
-        handleNew(setNodes, setEdges, setVariables);
+        // 直接在handleNew函数中传入setCurrentContainerId参数，确保同时重置路径和容器ID
+        handleNew(setNodes, setEdges, setVariables, setCurrentPath, setCurrentContainerId);
         setSelectedEdge(null); // 清除选中的边
       }}>新建</button>
       <button onClick={() => handleSave(nodes, edges, variables)}>存档</button>

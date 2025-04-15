@@ -313,6 +313,7 @@ export const PlotNode = ({ data, id, selected }: NodeProps) => {
           node={{ id, data, type: 'plot', position: { x: 0, y: 0 } }} 
           onEdit={data.onEdit} 
           onDelete={data.onDelete} 
+          onCopy={data.onCopy}
         />
       )}
     </div>
@@ -337,6 +338,7 @@ export const EndNode = ({ data, id, selected }: NodeProps) => {
           node={{ id, data, type: 'end', position: { x: 0, y: 0 } }} 
           onEdit={data.onEdit} 
           onDelete={data.onDelete} 
+          onCopy={data.onCopy}
         />
       )}
     </div>
@@ -406,6 +408,7 @@ export const ContainerNode = ({ data, id, selected }: NodeProps) => {
           node={{ id, data, type: 'container', position: { x: 0, y: 0 } }} 
           onEdit={data.onEdit} 
           onDelete={data.onDelete} 
+          onCopy={data.onCopy}
         />
       )}
     </div>
@@ -463,6 +466,7 @@ export const ExitNode = ({ data, id, selected }: NodeProps) => {
           node={{ id, data, type: 'exit', position: { x: 0, y: 0 } }}
           onEdit={data.onEdit}
           onDelete={data.onDelete}
+          onCopy={data.onCopy}
         />
       )}
     </div>
