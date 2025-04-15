@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNodes, Node } from 'reactflow';
 import { EdgeEditorProps, NodeData } from './types';
 import VariableEditor from './VariableEditor';
-// 移除未使用的ConditionEditor导入
 
 interface UpdatedData {
-  ntype: string;
-  btnname: string;
   updateVariables: {[key: string]: any};
   conditionVariable?: string;
   conditionType?: string;
@@ -16,12 +13,9 @@ interface UpdatedData {
 const EdgeEditor: React.FC<EdgeEditorProps> = ({ edge, onClose, updateEdge }) => {
   // 初始化边的数据，如果没有data则创建空对象
   const initialData = edge.data || {};
-  // 不再由用户选择跳转方式，而是根据源节点的Handle类型自动确定
-  const [ntype, setNtype] = useState(initialData.ntype || 'goto'); // 默认为直接跳转
-  const [btnname, setBtnname] = useState(initialData.btnname || ''); // 按钮名称
   const [updateVariables, setUpdateVariables] = useState<{[key: string]: any}>(initialData.updateVariables || {}); // 变量更新
   
-  // 条件跳转相关状态
+  // 条件跳转相关状态（保留但不使用）
   const [conditionVariable, _setConditionVariable] = useState(initialData.conditionVariable || ''); // 条件变量
   const [conditionType, _setConditionType] = useState(initialData.conditionType || 'equal'); // 条件类型
   const [conditionValue, _setConditionValue] = useState(initialData.conditionValue || ''); // 条件值
@@ -37,23 +31,7 @@ const EdgeEditor: React.FC<EdgeEditorProps> = ({ edge, onClose, updateEdge }) =>
   const sourceNodeName = sourceNode?.data?.mname || sourceNode?.id || '未知节点';
   const targetNodeName = targetNode?.data?.mname || targetNode?.id || '未知节点';
   
-  // 根据源节点的Handle ID确定跳转方式
-  useEffect(() => {
-    if (edge.sourceHandle && edge.sourceHandle.startsWith('button-')) {
-      // 如果源Handle ID以'button-'开头，说明是按钮跳转
-      setNtype('btnsto');
-      // 尝试从源节点的按钮数据中获取按钮名称
-      if (sourceNode?.data?.buttons) {
-        const buttonIndex = parseInt(edge.sourceHandle.replace('button-', ''));
-        if (!isNaN(buttonIndex) && sourceNode.data.buttons[buttonIndex]) {
-          setBtnname(sourceNode.data.buttons[buttonIndex].title || `按钮${buttonIndex+1}`);
-        }
-      }
-    } else {
-      // 否则是直接跳转
-      setNtype('goto');
-    }
-  }, [edge.sourceHandle, sourceNode]);
+  // 移除了根据源节点的Handle ID确定跳转方式的代码
 
   // 获取变量的类型
   const getVariableType = (variablePath: string): string => {
@@ -83,21 +61,14 @@ const EdgeEditor: React.FC<EdgeEditorProps> = ({ edge, onClose, updateEdge }) =>
   // 如果将来需要使用条件编辑功能，可以重新添加此函数
   
   const handleSave = () => {
-    // 准备更新的数据
+    // 准备更新的数据，只保留updateVariables
     const updatedData: UpdatedData = {
-      ntype,
-      btnname,
       // 确保使用最新的updateVariables状态
       updateVariables: {...updateVariables}
     };
 
-    // 如果是按钮跳转，则添加按钮名称
-    if (ntype === 'btnsto') {
-      updatedData.btnname = btnname;
-    }
-
     // 如果是条件跳转，则添加条件相关数据
-    if (ntype === 'condition') {
+    if (edge.sourceHandle === 'condition') {
       updatedData.conditionVariable = conditionVariable;
       updatedData.conditionType = conditionType;
       updatedData.conditionValue = conditionValue;

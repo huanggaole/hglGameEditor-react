@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from 'react'
 import ReactFlow, {
   Controls,
   Background,
-  addEdge,
   Connection,
   Edge,
   Node,
@@ -63,25 +62,6 @@ function App() {
     window.appVariables = variables;
   }, [variables]);
 
-  // 更新节点数据的函数
-  const updateNodeData = useCallback((nodeId: string, data: any) => {
-    setNodes((nds) => 
-      nds.map((node) => {
-        if (node.id === nodeId) {
-          // 创建一个新的节点对象，更新data属性
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              ...data
-            }
-          };
-        }
-        return node;
-      })
-    );
-  }, [setNodes])
-
   // 更新边数据的函数
   const updateEdgeData = useCallback((edgeId: string, data: any) => {
     setEdges((eds) => 
@@ -104,6 +84,59 @@ function App() {
       })
     );
   }, [setEdges])
+
+  // 更新节点数据的函数
+  const updateNodeData = useCallback((nodeId: string, data: any) => {
+    // 先更新节点数据
+    setNodes((nds) => 
+      nds.map((node) => {
+        if (node.id === nodeId) {
+          // 创建一个新的节点对象，更新data属性
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              ...data
+            }
+          };
+        }
+        return node;
+      })
+    );
+    
+    // 如果更新了transitionType或buttons字段，同步更新相关的边的sourceHandle
+    if (data.transitionType !== undefined || data.buttons !== undefined) {
+      // 找出从该节点出发的所有边
+      const outgoingEdges = edges.filter(edge => edge.source === nodeId);
+      
+      // 更新每条出边的sourceHandle
+      outgoingEdges.forEach(edge => {
+        // 获取源节点的最新数据
+        const sourceNode = nodes.find(node => node.id === nodeId);
+        if (!sourceNode) return;
+        
+        // 修复：当transitionType从goto变为btnsto时，需要更新边的sourceHandle
+        if (data.transitionType === 'btnsto' && (!edge.sourceHandle || !edge.sourceHandle.startsWith('button-'))) {
+          // 如果有按钮数据，使用第一个按钮作为sourceHandle
+          if (data.buttons && data.buttons.length > 0) {
+            // 更新边的sourceHandle为第一个按钮
+            setEdges(eds => eds.map(e => {
+              if (e.id === edge.id) {
+                return {
+                  ...e,
+                  sourceHandle: 'button-0'
+                };
+              }
+              return e;
+            }));
+            
+            // 同时更新当前边对象的sourceHandle，以便后续处理
+            edge.sourceHandle = 'button-0';
+          }
+        }
+      });
+    }
+  }, [setNodes, edges, nodes, setEdges])
 
   // 删除节点及其连接的边
   const deleteNode = useCallback((nodeId: string) => {
@@ -164,25 +197,8 @@ function App() {
 
   const onConnect = useCallback(
     (params: Connection) => {
-      // 根据源节点的Handle ID确定跳转方式
-      let ntype = 'goto'; // 默认为直接跳转
-      let btnname = '';
-      
-      // 检查是否是按钮跳转
-      if (params.sourceHandle && params.sourceHandle.startsWith('button-')) {
-        ntype = 'btnsto';
-        // 尝试从源节点获取按钮名称
-        const sourceNode = nodes.find(node => node.id === params.source);
-        if (sourceNode?.data?.buttons) {
-          const buttonIndex = parseInt(params.sourceHandle.replace('button-', ''));
-          if (!isNaN(buttonIndex) && sourceNode.data.buttons[buttonIndex]) {
-            btnname = sourceNode.data.buttons[buttonIndex].title || `按钮${buttonIndex+1}`;
-          }
-        }
-      }
-      
-      // 边的数据
-      const edgeData = { ntype, btnname, updateVariables: {} };
+      // 边的数据，只保留updateVariables字段
+      const edgeData = { updateVariables: {} };
       
       // 使用createEdge函数创建新边
       const newEdge = createEdge(params, edges, edgeData);
@@ -195,7 +211,7 @@ function App() {
       // 添加新边到边集合
       return setEdges((eds) => [...eds, newEdge]);
     },
-    [edges, setEdges, nodes]
+    [edges, setEdges]
   )
 
   // 复制节点函数

@@ -108,11 +108,13 @@ const createEdge = (params: Connection, existingEdges: Edge[] = [], data: any = 
   // 使用累加器生成边ID
   const id = `e${edgeIdCounter++}`;
   
-  // 创建新边
+  // 创建新边，只保留updateVariables数据
   const newEdge: Edge = {
     ...params,
     id,
-    data: data
+    data: {
+      updateVariables: data.updateVariables || {}
+    }
   };
   
   return newEdge;

@@ -77,27 +77,8 @@ export const handleLoad = (setNodes: (nodes: Node[]) => void, setEdges: (edges: 
         if (data.nodes && data.edges) {
           setNodes(data.nodes);
           
-          // 确保边的sourceHandle属性被正确保留
-          const processedEdges = data.edges.map((edge: Edge) => {
-            // 如果边的数据中有btnname属性，说明是按钮跳转，需要确保sourceHandle属性正确
-            if (edge.data && edge.data.ntype === 'btnsto') {
-              // 查找对应的按钮索引
-              const sourceNode = data.nodes.find((node: Node) => node.id === edge.source);
-              if (sourceNode && sourceNode.data && sourceNode.data.buttons) {
-                const buttonIndex = sourceNode.data.buttons.findIndex(
-                  (btn: any) => btn.title === edge.data.btnname
-                );
-                if (buttonIndex !== -1) {
-                  // 设置正确的sourceHandle
-                  return {
-                    ...edge,
-                    sourceHandle: `button-${buttonIndex}`
-                  };
-                }
-              }
-            }
-            return edge;
-          });
+          // 直接使用加载的边数据，不再处理ntype和btnname
+          const processedEdges = data.edges;
           
           setEdges(processedEdges);
           
@@ -122,27 +103,8 @@ export const handleLoad = (setNodes: (nodes: Node[]) => void, setEdges: (edges: 
       const { nodes: savedNodes, edges: savedEdges, variables: savedVariables } = JSON.parse(savedData);
       setNodes(savedNodes);
       
-      // 确保边的sourceHandle属性被正确保留
-      const processedEdges = savedEdges.map((edge: Edge) => {
-        // 如果边的数据中有btnname属性，说明是按钮跳转，需要确保sourceHandle属性正确
-        if (edge.data && edge.data.ntype === 'btnsto') {
-          // 查找对应的按钮索引
-          const sourceNode = savedNodes.find((node: Node) => node.id === edge.source);
-          if (sourceNode && sourceNode.data && sourceNode.data.buttons) {
-            const buttonIndex = sourceNode.data.buttons.findIndex(
-              (btn: any) => btn.title === edge.data.btnname
-            );
-            if (buttonIndex !== -1) {
-              // 设置正确的sourceHandle
-              return {
-                ...edge,
-                sourceHandle: `button-${buttonIndex}`
-              };
-            }
-          }
-        }
-        return edge;
-      });
+      // 直接使用加载的边数据，不再处理ntype和btnname
+      const processedEdges = savedEdges;
       
       setEdges(processedEdges);
       

@@ -37,15 +37,32 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
   const outgoingEdges = edges.filter(edge => edge.source === currentNodeId);
 
   // 构建按钮信息
-  const buttons: ButtonInfo[] = outgoingEdges.map(edge => {
-    // 如果是按钮跳转类型(btnsto)，则使用btnname作为按钮标签，否则使用默认的'下一步'
-    const buttonLabel = edge.data?.ntype === 'btnsto' ? edge.data?.btnname || '下一步' : '下一步';
-    return {
-      id: edge.id,
-      label: buttonLabel,
-      targetNodeId: edge.target
-    };
-  });
+  const buttons: ButtonInfo[] = [];
+  
+  // 根据节点的跳转方式和按钮信息构建按钮
+  if (currentNode?.data?.transitionType === 'btnsto' && currentNode?.data?.buttons && currentNode.data.buttons.length > 0) {
+    // 如果节点是按钮跳转类型，使用节点中存储的按钮信息
+    currentNode.data.buttons.forEach((button: any, index: number) => {
+      // 查找对应的边
+      const edge = outgoingEdges.find(e => e.sourceHandle === `button-${index}`);
+      if (edge) {
+        buttons.push({
+          id: edge.id,
+          label: button.title || `按钮${index+1}`,
+          targetNodeId: edge.target
+        });
+      }
+    });
+  } else {
+    // 如果是直接跳转或其他类型，为每个出边创建一个默认按钮
+    outgoingEdges.forEach(edge => {
+      buttons.push({
+        id: edge.id,
+        label: '下一步',
+        targetNodeId: edge.target
+      });
+    });
+  }
 
   // 解析文本中的变量引用的包装函数
   const parseVariablesWrapper = (text: string): string => {
@@ -60,8 +77,8 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
     const edge = edges.find(e => e.id === edgeId);
     console.log('Found edge:', edge);
     
-    // 如果是条件跳转，先判断条件是否满足
-    if (edge?.data?.ntype === 'condition') {
+    // 条件跳转功能已移除，保留条件变量处理逻辑以兼容旧数据
+    if (edge?.data?.conditionVariable && edge?.data?.conditionType && edge?.data?.conditionValue) {
       const { conditionVariable, conditionType, conditionValue } = edge.data;
       const currentValue = parseVariables(conditionVariable, tempVariables);
       
