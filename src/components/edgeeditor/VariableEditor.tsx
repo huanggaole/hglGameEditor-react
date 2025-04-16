@@ -61,7 +61,7 @@ const VariableEditor: React.FC<VariableEditorProps> = ({
       setVariableValue(String(value));
     }
     
-    setShowVariableEditor(false);
+    setShowVariableEditor(true);
   };
 
   // 处理变量选择

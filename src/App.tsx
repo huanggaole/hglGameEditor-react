@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
 import ReactFlow, {
-  Controls,
   Background,
   Connection,
   Edge,
@@ -18,6 +17,7 @@ import EdgeEditor from './components/edgeeditor'
 import NodeEditor from './components/nodeeditor'
 import { CustomEdge } from './components/CustomEdges'
 import { PreviewComponent } from './components/previewer';
+import CustomControls from './components/CustomControls';
 import VariableEditor, { CustomVariable } from './components/VariableEditor'
 import OperPanel from './components/operpanel'
 
@@ -478,7 +478,10 @@ function App() {
             onEdgeClick={onEdgeClick}
             onPaneClick={onPaneClick}
           >
-            <Controls />
+            <CustomControls 
+              copiedNode={copiedNode} 
+              onPaste={pasteNode} 
+            />
             <Background />
             {editingNode && (
               <NodeEditor 
