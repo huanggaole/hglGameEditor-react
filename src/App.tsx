@@ -9,11 +9,11 @@ import ReactFlow, {
   useNodesState,
   getConnectedEdges,
   XYPosition,
+  useReactFlow,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import MenuBar from './components/menu/MenuBar'
 import { StartNode, PlotNode, EndNode, ContainerNode, EntryNode, ExitNode } from './components/CustomNodes'
-import { EdgeControls } from './components/NodeEdgeControls'
 import EdgeEditor from './components/edgeeditor'
 import NodeEditor from './components/nodeeditor'
 import { CustomEdge } from './components/CustomEdges'
@@ -47,7 +47,6 @@ function App() {
   const [editingNode, setEditingNode] = useState<Node | null>(null)
   const [selectedNode, setSelectedNode] = useState<Node | null>(null)
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null)
-  const [edgeControlsPosition, setEdgeControlsPosition] = useState({ x: 0, y: 0 })
   const [editingEdge, setEditingEdge] = useState<Edge | null>(null)
   const [showPreview, setShowPreview] = useState(false)
   const [showVariableEditor, setShowVariableEditor] = useState(false)
@@ -392,25 +391,11 @@ function App() {
     setSelectedEdge(null);
   }, []);
 
-  // 处理边点击事件
+  // 处理边点击事件 - 简化版本，只用于更新状态
   const onEdgeClick = useCallback((_event: React.MouseEvent, edge: Edge) => {
     // 设置选中边
     setSelectedEdge(edge);
     setSelectedNode(null);
-    
-    // 获取边的路径元素
-    const edgeElement = document.getElementById(edge.id);
-    if (edgeElement && edgeElement instanceof SVGPathElement) {
-      // 获取边的中点位置
-      const pathLength = edgeElement.getTotalLength();
-      const midPoint = edgeElement.getPointAtLength(pathLength / 2);
-      
-      // 设置边控制按钮的位置为边的中点
-      setEdgeControlsPosition({
-        x: midPoint.x,
-        y: midPoint.y
-      });
-    }
   }, []);
 
   // 处理画布点击事件，清除选中状态
@@ -476,7 +461,14 @@ function App() {
               const targetNode = nodes.find(n => n.id === edge.target);
               return sourceNode?.data.parentId === currentContainerId && 
                      targetNode?.data.parentId === currentContainerId;
-            })}
+            }).map(edge => ({
+              ...edge,
+              data: {
+                ...edge.data,
+                onEdit: (edge: Edge) => setEditingEdge(edge),
+                onDelete: deleteEdge
+              }
+            }))}
             edgeTypes={edgeTypes}
             nodeTypes={nodeTypes}
             onNodesChange={onNodesChange}
@@ -502,22 +494,7 @@ function App() {
                 updateEdge={updateEdgeData}
               />
             )}
-            {selectedEdge && (
-              <div style={{
-                position: 'absolute',
-                left: `${edgeControlsPosition.x}px`,
-                top: `${edgeControlsPosition.y}px`,
-                transform: 'translate(-50%, -100%)',
-                pointerEvents: 'auto',
-                zIndex: 999
-              }}>
-                <EdgeControls 
-                  edge={selectedEdge}
-                  onEdit={(edge) => setEditingEdge(edge)}
-                  onDelete={deleteEdge}
-                />
-              </div>
-            )}
+            {/* EdgeControls已移至CustomEdges.tsx中 */}
           </ReactFlow>
         </div>
       </div>

@@ -110,17 +110,12 @@ export const NodeControls: React.FC<NodeControlsProps> = ({ node, onEdit, onDele
 export const EdgeControls: React.FC<EdgeControlsProps> = ({ edge, onEdit, onDelete }) => {
   return (
     <div
-      className="edge-controls"
+      className="react-flow__edge-controls"
       style={{
         position: 'absolute',
         display: 'flex',
         gap: '5px',
-        zIndex: 1000,
-        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-        padding: '2px',
-        borderRadius: '4px',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-        pointerEvents: 'auto'
+        zIndex: 10,
       }}
       onClick={(e) => e.stopPropagation()}
     >
