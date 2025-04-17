@@ -39,8 +39,13 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
   // 构建按钮信息
   const buttons: ButtonInfo[] = [];
   
+  // 如果当前节点是条件分歧节点，自动根据条件判断下一步
+  if (currentNode?.type === 'condition') {
+    // 条件分歧节点不显示按钮，将在componentDidMount中自动处理
+    // 这里不添加任何按钮
+  } 
   // 根据节点的跳转方式和按钮信息构建按钮
-  if (currentNode?.data?.transitionType === 'btnsto' && currentNode?.data?.buttons && currentNode.data.buttons.length > 0) {
+  else if (currentNode?.data?.transitionType === 'btnsto' && currentNode?.data?.buttons && currentNode.data.buttons.length > 0) {
     // 如果节点是按钮跳转类型，使用节点中存储的按钮信息
     currentNode.data.buttons.forEach((button: any, index: number) => {
       // 查找对应的边
@@ -69,6 +74,85 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
     return parseVariables(text, tempVariables);
   };
 
+  // 自动处理条件分歧节点
+  useEffect(() => {
+    // 如果当前节点是条件分歧节点，自动处理条件判断和跳转
+    if (currentNode?.type === 'condition') {
+      console.log('Processing condition node:', currentNode);
+      
+      // 获取条件列表
+      const conditions = currentNode.data.conditions || [];
+      
+      // 获取从条件节点出发的所有边
+      const conditionEdges = edges.filter(edge => edge.source === currentNode.id);
+      
+      // 默认边 - 当所有条件都不满足时使用
+      const defaultEdge = conditionEdges.find(edge => edge.sourceHandle === 'default');
+      
+      // 检查每个条件，找到第一个满足的条件
+      let matchedEdge = null;
+      let matchedCondition = null;
+      
+      for (let i = 0; i < conditions.length; i++) {
+        const condition = conditions[i];
+        const edge = conditionEdges.find(edge => edge.sourceHandle === `condition-${i}`);
+        
+        if (edge && condition.variable && condition.type && condition.value !== undefined) {
+          // 获取变量当前值
+          const variableValue = parseVariables(condition.variable, tempVariables);
+          console.log(`检查条件: ${condition.variable} (${variableValue}) ${condition.type} ${condition.value}`);
+          
+          // 根据条件类型进行判断
+          let conditionMet = false;
+          switch (condition.type) {
+            case '等于':
+              conditionMet = variableValue == condition.value;
+              break;
+            case '不等于':
+              conditionMet = variableValue != condition.value;
+              break;
+            case '大于':
+              conditionMet = Number(variableValue) > Number(condition.value);
+              break;
+            case '小于':
+              conditionMet = Number(variableValue) < Number(condition.value);
+              break;
+            case '大于等于':
+              conditionMet = Number(variableValue) >= Number(condition.value);
+              break;
+            case '小于等于':
+              conditionMet = Number(variableValue) <= Number(condition.value);
+              break;
+            case '包含':
+              conditionMet = String(variableValue).includes(String(condition.value));
+              break;
+            case '不包含':
+              conditionMet = !String(variableValue).includes(String(condition.value));
+              break;
+          }
+          
+          if (conditionMet) {
+            matchedEdge = edge;
+            matchedCondition = condition;
+            console.log(`条件满足: ${condition.label || `条件${i+1}`}`);
+            break;
+          }
+        }
+      }
+      
+      // 如果找到匹配的条件边，使用它；否则使用默认边
+      const edgeToUse = matchedEdge || defaultEdge;
+      
+      if (edgeToUse) {
+        console.log(`跳转到: ${edgeToUse.target}，通过: ${matchedCondition ? matchedCondition.label : '默认分支'}`);
+        // 使用setTimeout避免无限循环渲染
+        setTimeout(() => {
+          handleButtonClick(edgeToUse.target, edgeToUse.id);
+        }, 100);
+      }
+    }
+  });
+  
   // 处理按钮点击事件
   const handleButtonClick = (targetNodeId: string, edgeId: string) => {
     console.log('handleButtonClick called with:', { targetNodeId, edgeId, currentNodeId: currentNode?.id, currentNodeType: currentNode?.type });

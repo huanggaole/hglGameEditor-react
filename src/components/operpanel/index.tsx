@@ -128,6 +128,16 @@ const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge,
       >
         {NODE_LABELS[NODE_TYPES.CONTAINER]}
       </button>
+      <button 
+        onClick={() => {
+          const newNode = createNode(NODE_TYPES.CONDITION, { x: Math.random() * 500, y: Math.random() * 500 }, nodes, currentContainerId)
+          setNodes((nds) => nds.concat(newNode))
+          setSelectedEdge(null) // 清除选中的边
+        }}
+        style={{ border: '2px solid #ff9800', borderRadius: '4px', padding: '8px' }}
+      >
+        {NODE_LABELS[NODE_TYPES.CONDITION]}
+      </button>
     </div>
   );
 };

@@ -12,7 +12,7 @@ import ReactFlow, {
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import MenuBar from './components/menu/MenuBar'
-import { StartNode, PlotNode, EndNode, ContainerNode, EntryNode, ExitNode } from './components/CustomNodes'
+import { StartNode, PlotNode, EndNode, ContainerNode, EntryNode, ExitNode, ConditionNode } from './components/CustomNodes'
 import EdgeEditor from './components/edgeeditor'
 import NodeEditor from './components/nodeeditor'
 import { CustomEdge } from './components/CustomEdges'
@@ -30,7 +30,8 @@ const nodeTypes = {
   [NODE_TYPES.END]: EndNode,
   [NODE_TYPES.CONTAINER]: ContainerNode,
   [NODE_TYPES.ENTRY]: EntryNode,
-  [NODE_TYPES.EXIT]: ExitNode
+  [NODE_TYPES.EXIT]: ExitNode,
+  [NODE_TYPES.CONDITION]: ConditionNode
 }
 
 // 定义自定义边类型映射

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Node } from 'reactflow';
 import { CustomVariable } from '../VariableEditor';
 import { NODE_LABELS, NODE_TYPES } from './constants';
+import VariableSelector from './VariableSelector';
 
 interface NodeEditorProps {
   node: Node;
@@ -14,9 +15,14 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
   const [showInfo, setShowInfo] = useState(node.data.showInfo || '');
   const [note, setNote] = useState(node.data.note || '');
   const [showVariableSelector, setShowVariableSelector] = useState(false);
+  const [showConditionVariableSelector, setShowConditionVariableSelector] = useState(false);
   const [variables, setVariables] = useState<CustomVariable[]>([]);
   const [transitionType, setTransitionType] = useState(node.data.transitionType || 'goto'); // 默认为直接跳转
   const [buttons, setButtons] = useState<{title: string}[]>(node.data.buttons || []);
+  // 条件分歧节点的条件列表
+  const [conditions, setConditions] = useState<{variable: string, type: string, value: string, label: string}[]>(node.data.conditions || []);
+  // 新增条件的临时状态
+  const [newCondition, setNewCondition] = useState<{variable: string, type: string, value: string, label: string}>({variable: '', type: '等于', value: '', label: ''});
   
   // 判断是否为收纳节点或出口节点
   const isContainerNode = node.type === NODE_TYPES.CONTAINER || node.type === NODE_TYPES.EXIT;
@@ -24,13 +30,15 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
   const isPlotNode = node.type === NODE_TYPES.PLOT;
   // 判断是否为开始节点
   const isStartNode = node.type === NODE_TYPES.START;
+  // 判断是否为条件分歧节点
+  const isConditionNode = node.type === NODE_TYPES.CONDITION;
   // 判断是否需要跳转方式设置（情节节点和开始节点都需要）
   const needsTransitionType = isPlotNode || isStartNode;
 
   useEffect(() => {
     const appVariables = window.appVariables || [];
     setVariables(appVariables);
-  }, [showVariableSelector]);
+  }, [showVariableSelector, showConditionVariableSelector]);
 
   const handleSave = () => {
     // 根据节点类型保存不同的数据
@@ -48,6 +56,14 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
         showInfo,
         transitionType,
         buttons: transitionType === 'btnsto' ? buttons : []
+      });
+    } else if (isConditionNode) {
+      // 条件分歧节点保存条件列表
+      updateNode(node.id, {
+        ...node.data,
+        mname,
+        showInfo,
+        conditions
       });
     } else {
       updateNode(node.id, {
@@ -80,9 +96,9 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
 
   const addVariableReference = (variable: CustomVariable) => {
     if (variable.type === 'boolean') {
-      setShowInfo(showInfo + `{{${variable.name}}?"true显示内容":"false显示内容"}`); 
+      setShowInfo(showInfo + `{{${variable.name}}?"true显示内容":"false显示内容"}}`);
     } else {
-      setShowInfo(showInfo + `{{${variable.name}}}`); 
+      setShowInfo(showInfo + `{{${variable.name}}}`);
     }
     setShowVariableSelector(false);
   };
@@ -171,6 +187,213 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
             style={{ width: '100%', padding: '5px', minHeight: '100px' }} 
           />
         </div>
+      ) : isConditionNode ? (
+        <>
+          <div style={{ marginBottom: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+              <label>显示信息 (showInfo):</label>
+              <button 
+                onClick={() => setShowVariableSelector(!showVariableSelector)}
+                style={{
+                  backgroundColor: '#4a90e2',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '2px 8px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                }}
+              >
+                显示变量
+              </button>
+            </div>
+            <textarea 
+              value={showInfo} 
+              onChange={(e) => setShowInfo(e.target.value)} 
+              style={{ width: '100%', padding: '5px', minHeight: '100px' }} 
+            />
+            {showVariableSelector && (
+              <div style={{
+                marginTop: '10px',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                padding: '10px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                backgroundColor: 'white'
+              }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>选择要显示的变量:</div>
+                {variables.length === 0 ? (
+                  <div style={{ color: '#666', fontStyle: 'italic' }}>
+                    暂无变量，请先在"变量设置"中添加变量
+                  </div>
+                ) : (
+                  <div>{renderVariableOptions(variables)}</div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* 条件分歧节点的条件设置 */}
+          <div style={{ marginBottom: '10px', border: '1px solid #eee', padding: '10px', borderRadius: '4px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <label style={{ fontWeight: 'bold' }}>条件设置:</label>
+              <button 
+                onClick={() => {
+                  if (newCondition.variable && newCondition.value) {
+                    setConditions([...conditions, {
+                      ...newCondition,
+                      label: `${newCondition.variable} ${newCondition.type} ${newCondition.value}`
+                    }]);
+                    setNewCondition({variable: '', type: '等于', value: '', label: ''});
+                  }
+                }}
+                style={{
+                  backgroundColor: '#4a90e2',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '2px 8px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                }}
+              >
+                添加条件
+              </button>
+            </div>
+
+            {/* 新增条件表单 */}
+            <div style={{ marginBottom: '15px', backgroundColor: '#f9f9f9', padding: '10px', borderRadius: '4px' }}>
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                  <label>条件变量:</label>
+                  <button 
+                    onClick={() => setShowConditionVariableSelector(!showConditionVariableSelector)}
+                    style={{
+                      backgroundColor: '#4a90e2',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '2px 8px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    选择变量
+                  </button>
+                </div>
+                <input 
+                  type="text" 
+                  value={newCondition.variable} 
+                  onChange={(e) => setNewCondition({...newCondition, variable: e.target.value})} 
+                  placeholder="变量名称"
+                  style={{ width: '100%', padding: '5px' }} 
+                />
+                {showConditionVariableSelector && (
+                  <div style={{
+                    marginTop: '10px',
+                    border: '1px solid #ccc',
+                    borderRadius: '4px',
+                    padding: '10px',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    backgroundColor: 'white'
+                  }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>选择条件变量:</div>
+                    {variables.length === 0 ? (
+                      <div style={{ color: '#666', fontStyle: 'italic' }}>
+                        暂无变量，请先在"变量设置"中添加变量
+                      </div>
+                    ) : (
+                      <div>
+                        <VariableSelector
+                          variables={variables}
+                          onSelect={(variable, path) => {
+                            setNewCondition({...newCondition, variable: path});
+                            setShowConditionVariableSelector(false);
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', marginBottom: '5px' }}>条件类型:</label>
+                <select
+                  value={newCondition.type}
+                  onChange={(e) => setNewCondition({...newCondition, type: e.target.value})}
+                  style={{ width: '100%', padding: '5px' }}
+                >
+                  <option value="等于">等于</option>
+                  <option value="不等于">不等于</option>
+                  <option value="大于">大于</option>
+                  <option value="小于">小于</option>
+                  <option value="大于等于">大于等于</option>
+                  <option value="小于等于">小于等于</option>
+                  <option value="包含">包含</option>
+                  <option value="不包含">不包含</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'block', marginBottom: '5px' }}>条件值:</label>
+                <input 
+                  type="text" 
+                  value={newCondition.value} 
+                  onChange={(e) => setNewCondition({...newCondition, value: e.target.value})} 
+                  placeholder="条件值"
+                  style={{ width: '100%', padding: '5px' }} 
+                />
+              </div>
+            </div>
+
+            {/* 已添加的条件列表 */}
+            {conditions.length === 0 ? (
+              <div style={{ color: '#666', fontStyle: 'italic', marginTop: '5px' }}>
+                请添加至少一个条件
+              </div>
+            ) : (
+              <div>
+                <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>已添加的条件:</div>
+                {conditions.map((condition, index) => (
+                  <div key={index} style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    marginBottom: '5px',
+                    backgroundColor: '#f5f5f5',
+                    padding: '5px',
+                    borderRadius: '4px'
+                  }}>
+                    <span style={{ flex: 1 }}>{condition.label || `${condition.variable} ${condition.type} ${condition.value}`}</span>
+                    <button
+                      onClick={() => {
+                        const newConditions = [...conditions];
+                        newConditions.splice(index, 1);
+                        setConditions(newConditions);
+                      }}
+                      style={{
+                        backgroundColor: '#ff4d4f',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '2px 8px',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      删除
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ marginTop: '10px', color: '#666', fontSize: '12px' }}>
+              注意: 条件将按顺序检查，第一个满足的条件将被执行。请确保为每个条件添加相应的连接线。
+            </div>
+          </div>
+        </>
       ) : (
         <>
           <div style={{ marginBottom: '10px' }}>

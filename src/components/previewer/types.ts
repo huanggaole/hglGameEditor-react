@@ -9,7 +9,7 @@ declare global {
 }
 
 // 定义预览界面类型
-export type PreviewType = 'start' | 'plot' | 'end';
+export type PreviewType = 'start' | 'plot' | 'end' | 'condition' | 'container' | 'entry' | 'exit';
 
 // 定义按钮类型，用于表示跳转按钮
 export interface ButtonInfo {
