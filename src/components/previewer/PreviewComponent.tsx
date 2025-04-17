@@ -75,6 +75,7 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
   };
 
   // 自动处理条件分歧节点
+  // 自动处理条件分歧节点
   useEffect(() => {
     // 如果当前节点是条件分歧节点，自动处理条件判断和跳转
     if (currentNode?.type === 'condition') {
@@ -141,17 +142,26 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
       }
       
       // 如果找到匹配的条件边，使用它；否则使用默认边
+      // 这里确保在没有任何条件满足时，使用默认分支
       const edgeToUse = matchedEdge || defaultEdge;
       
       if (edgeToUse) {
-        console.log(`跳转到: ${edgeToUse.target}，通过: ${matchedCondition ? matchedCondition.label : '默认分支'}`);
+        // 明确标识是通过哪个分支跳转的
+        const branchType = matchedCondition ? 
+          (matchedCondition.label || `条件${conditions.indexOf(matchedCondition)+1}`) : 
+          '默认分支';
+        console.log(`跳转到: ${edgeToUse.target}，通过: ${branchType}，边ID: ${edgeToUse.id}`);
+        
         // 使用setTimeout避免无限循环渲染
         setTimeout(() => {
+          // 传递正确的边ID，确保在使用默认分支时也能执行边上的变量操作
           handleButtonClick(edgeToUse.target, edgeToUse.id);
         }, 100);
+      } else {
+        console.log('没有找到匹配的条件边或默认边，无法跳转');
       }
     }
-  });
+  }, [currentNodeId, edges, nodes, tempVariables]);
   
   // 处理按钮点击事件
   const handleButtonClick = (targetNodeId: string, edgeId: string) => {
@@ -161,39 +171,7 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
     const edge = edges.find(e => e.id === edgeId);
     console.log('Found edge:', edge);
     
-    // 条件跳转功能已移除，保留条件变量处理逻辑以兼容旧数据
-    if (edge?.data?.conditionVariable && edge?.data?.conditionType && edge?.data?.conditionValue) {
-      const { conditionVariable, conditionType, conditionValue } = edge.data;
-      const currentValue = parseVariables(conditionVariable, tempVariables);
-      
-      // 根据条件类型进行判断
-      let conditionMet = false;
-      switch (conditionType) {
-        case '等于':
-          conditionMet = currentValue == conditionValue;
-          break;
-        case '不等于':
-          conditionMet = currentValue != conditionValue;
-          break;
-        case '大于':
-          conditionMet = Number(currentValue) > Number(conditionValue);
-          break;
-        case '小于':
-          conditionMet = Number(currentValue) < Number(conditionValue);
-          break;
-        case '大于等于':
-          conditionMet = Number(currentValue) >= Number(conditionValue);
-          break;
-        case '小于等于':
-          conditionMet = Number(currentValue) <= Number(conditionValue);
-          break;
-      }
-      
-      // 如果条件不满足，直接返回
-      if (!conditionMet) {
-        return;
-      }
-    }
+    // 条件跳转功能已完全移除，仅保留变量更新逻辑
     
     if (edge && edge.data?.updateVariables) {
       // 更新临时变量
@@ -297,6 +275,12 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
     }
   };
 
+  // 如果当前节点是条件分歧节点，不渲染UI，直接返回null
+  // 条件分歧节点的处理逻辑已经在useEffect中实现
+  if (currentType === 'condition') {
+    return null;
+  }
+  
   return (
     <div className="preview-container" style={{
       position: 'fixed',
