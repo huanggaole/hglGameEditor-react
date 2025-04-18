@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Node } from 'reactflow';
 import { CustomVariable } from '../../VariableEditor';
+import { useLanguage } from '../../../contexts/LanguageContext';
 import NodeBaseInfo from '../common/NodeBaseInfo';
 import NoteEditor from '../common/NoteEditor';
 import ActionButtons from '../common/ActionButtons';
@@ -29,13 +30,14 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
   onClose,
   updateNode
 }) => {
+  const { t } = useLanguage();
   const [variables, setVariables] = useState<CustomVariable[]>([]);
   const [showConditionVariableSelector, setShowConditionVariableSelector] = useState(false);
   const [showAddCondition, setShowAddCondition] = useState(false);
   const [editingConditionIndex, setEditingConditionIndex] = useState<number | null>(null);
   const [selectedVariable, setSelectedVariable] = useState<CustomVariable | null>(null);
   const [newCondition, setNewCondition] = useState<{variable: string, type: string, value: string, label: string}>(
-    {variable: '', type: '等于', value: '', label: ''}
+    {variable: '', type: t.equals, value: '', label: ''}
   );
 
   useEffect(() => {
@@ -47,7 +49,7 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
     updateNode(node.id, {
       ...node.data,
       mname,
-      note: showInfo, // 使用showInfo作为备注
+      note: showInfo,
       conditions
     });
     onClose();
@@ -56,16 +58,14 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
   const addCondition = () => {
     if (newCondition.variable && newCondition.value) {
       if (editingConditionIndex !== null) {
-        // 编辑现有条件
         const updatedConditions = [...conditions];
         updatedConditions[editingConditionIndex] = { ...newCondition };
         setConditions(updatedConditions);
         setEditingConditionIndex(null);
       } else {
-        // 添加新条件
         setConditions([...conditions, { ...newCondition }]);
       }
-      setNewCondition({variable: '', type: '等于', value: '', label: ''});
+      setNewCondition({variable: '', type: t.equals, value: '', label: ''});
       setShowAddCondition(false);
     }
   };
@@ -88,48 +88,45 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
     setEditingConditionIndex(index);
     setShowAddCondition(true);
     
-    // 尝试找到对应的变量以获取正确的类型选项
     const variable = variables.find(v => v.name === condition.variable);
     if (variable) {
       setSelectedVariable(variable);
     }
   };
   
-  // 根据变量类型获取默认条件类型
   const getDefaultConditionType = (variableType: string): string => {
     switch(variableType) {
-      case 'number': return '等于';
-      case 'string': return '等于';
-      case 'boolean': return '等于';
-      default: return '等于';
+      case 'number': return t.equals;
+      case 'string': return t.equals;
+      case 'boolean': return t.equals;
+      default: return t.equals;
     }
   };
   
-  // 根据变量类型获取条件类型选项
   const getConditionTypeOptions = (variableType: string) => {
     switch(variableType) {
       case 'number':
         return [
-          <option key="eq" value="等于">等于</option>,
-          <option key="neq" value="不等于">不等于</option>,
-          <option key="gt" value="大于">大于</option>,
-          <option key="lt" value="小于">小于</option>,
-          <option key="gte" value="大于等于">大于等于</option>,
-          <option key="lte" value="小于等于">小于等于</option>
+          <option key="eq" value={t.equals}>{t.equals}</option>,
+          <option key="neq" value={t.notEquals}>{t.notEquals}</option>,
+          <option key="gt" value={t.greaterThan}>{t.greaterThan}</option>,
+          <option key="lt" value={t.lessThan}>{t.lessThan}</option>,
+          <option key="gte" value={t.greaterThanOrEquals}>{t.greaterThanOrEquals}</option>,
+          <option key="lte" value={t.lessThanOrEquals}>{t.lessThanOrEquals}</option>
         ];
       case 'string':
         return [
-          <option key="eq" value="等于">等于</option>,
-          <option key="contains" value="包含">包含</option>
+          <option key="eq" value={t.equals}>{t.equals}</option>,
+          <option key="contains" value={t.contains}>{t.contains}</option>
         ];
       case 'boolean':
         return [
-          <option key="eq" value="等于">等于</option>,
-          <option key="neq" value="不等于">不等于</option>
+          <option key="eq" value={t.equals}>{t.equals}</option>,
+          <option key="neq" value={t.notEquals}>{t.notEquals}</option>
         ];
       default:
         return [
-          <option key="eq" value="等于">等于</option>
+          <option key="eq" value={t.equals}>{t.equals}</option>
         ];
     }
   };
@@ -145,12 +142,12 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
       
       <div style={{ marginBottom: '10px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-          <label style={{ display: 'block' }}>条件列表:</label>
+          <label style={{ display: 'block' }}>{t.conditionList}:</label>
           <button 
             onClick={() => {
               setShowAddCondition(!showAddCondition);
               setEditingConditionIndex(null);
-              setNewCondition({variable: '', type: '等于', value: '', label: ''});
+              setNewCondition({variable: '', type: t.equals, value: '', label: ''});
             }}
             style={{
               backgroundColor: '#4a90e2',
@@ -161,7 +158,7 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
               cursor: 'pointer',
             }}
           >
-            插入条件
+            {t.insertCondition}
           </button>
         </div>
         
@@ -173,7 +170,7 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
           border: '1px dashed #ccc'
         }}>
           <p style={{ margin: '0', fontSize: '14px', color: '#666' }}>
-            <strong>默认分支说明：</strong>当不满足任何一个条件列表中的条件时，将执行默认分支。
+            <strong>{t.defaultBranchNote}:</strong> {t.defaultBranchDesc}
           </p>
         </div>
         
@@ -186,9 +183,9 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
             borderRadius: '4px'
           }}>
             <div style={{ flex: 1 }}>
-              <strong>变量:</strong> {condition.variable}, 
-              <strong>条件:</strong> {condition.type}, 
-              <strong>值:</strong> {condition.value}
+              <strong>{t.variableLabel}:</strong> {condition.variable}, 
+              <strong>{t.conditionType}:</strong> {condition.type}, 
+              <strong>{t.conditionValue}:</strong> {condition.value}
             </div>
             <div>
               <button 
@@ -203,7 +200,7 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
                   cursor: 'pointer',
                 }}
               >
-                编辑
+                {t.edit}
               </button>
               <button 
                 onClick={() => removeCondition(index)}
@@ -216,7 +213,7 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
                   cursor: 'pointer',
                 }}
               >
-                删除
+                {t.delete}
               </button>
             </div>
           </div>
@@ -224,10 +221,10 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
 
         {showAddCondition && (
           <div style={{ marginTop: '10px', padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}>
-            <h4>{editingConditionIndex !== null ? '编辑条件' : '添加新条件'}</h4>
+            <h4>{editingConditionIndex !== null ? t.editCondition : t.addNewCondition}</h4>
           
           <div style={{ marginBottom: '5px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>变量:</label>
+            <label style={{ display: 'block', marginBottom: '5px' }}>{t.variableLabel}:</label>
             <div style={{ display: 'flex' }}>
               <input 
                 type="text" 
@@ -246,7 +243,7 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
                   cursor: 'pointer',
                 }}
               >
-                选择
+                {t.selectVariableBtn}
               </button>
             </div>
           </div>
@@ -260,14 +257,14 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
               maxHeight: '200px',
               overflowY: 'auto'
             }}>
-              <h4>选择变量</h4>
+              <h4>{t.selectVariable}</h4>
               {variables.length > 0 ? (
                 <VariableSelector 
                   variables={variables} 
                   onSelect={(variable) => selectVariable(variable)}
                 />
               ) : (
-                <p>没有可用变量</p>
+                <p>{t.noVariables}</p>
               )}
               <button 
                 onClick={() => setShowConditionVariableSelector(false)}
@@ -280,25 +277,25 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
                   cursor: 'pointer',
                 }}
               >
-                关闭
+                {t.close}
               </button>
             </div>
           )}
           
           <div style={{ marginBottom: '5px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>条件类型:</label>
+            <label style={{ display: 'block', marginBottom: '5px' }}>{t.conditionType}:</label>
             <select
               value={newCondition.type}
               onChange={(e) => setNewCondition({...newCondition, type: e.target.value})}
               style={{ width: '100%', padding: '5px' }}
               disabled={!selectedVariable}
             >
-              {selectedVariable ? getConditionTypeOptions(selectedVariable.type) : <option value="">请先选择变量</option>}
+              {selectedVariable ? getConditionTypeOptions(selectedVariable.type) : <option value="">{t.pleaseSelectVariable}</option>}
             </select>
           </div>
           
           <div style={{ marginBottom: '5px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>值:</label>
+            <label style={{ display: 'block', marginBottom: '5px' }}>{t.conditionValue}:</label>
             <input 
               type="text" 
               value={newCondition.value} 
@@ -307,14 +304,12 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
             />
           </div>
           
-
-          
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <button 
               onClick={() => {
                 setShowAddCondition(false);
                 setEditingConditionIndex(null);
-                setNewCondition({variable: '', type: '等于', value: '', label: ''});
+                setNewCondition({variable: '', type: t.equals, value: '', label: ''});
               }}
               style={{
                 backgroundColor: '#f5f5f5',
@@ -325,7 +320,7 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
                 marginRight: '10px'
               }}
             >
-              取消
+              {t.cancel}
             </button>
             <button 
               onClick={addCondition}
@@ -339,7 +334,7 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
               }}
               disabled={!newCondition.variable || !newCondition.value}
             >
-              {editingConditionIndex !== null ? '保存修改' : '添加条件'}
+              {editingConditionIndex !== null ? t.save : t.addNewCondition}
             </button>
           </div>
         </div>

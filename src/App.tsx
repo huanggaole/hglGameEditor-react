@@ -8,11 +8,10 @@ import ReactFlow, {
   useNodesState,
   getConnectedEdges,
   XYPosition,
-  useReactFlow,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import MenuBar from './components/menu/MenuBar'
-import { StartNode, PlotNode, EndNode, ContainerNode, EntryNode, ExitNode, ConditionNode } from './components/CustomNodes'
+import { StartNode, PlotNode, EndNode, ContainerNode, EntryNode, ExitNode, ConditionNode } from './components/nodedraw/nodes'
 import EdgeEditor from './components/edgeeditor'
 import NodeEditor from './components/nodeeditor'
 import { CustomEdge } from './components/CustomEdges'
@@ -20,6 +19,7 @@ import { PreviewComponent } from './components/previewer';
 import CustomControls from './components/CustomControls';
 import VariableEditor, { CustomVariable } from './components/VariableEditor'
 import OperPanel from './components/operpanel'
+import { LanguageProvider } from './contexts/LanguageContext'
 
 import { NODE_TYPES } from './components/nodeeditor/constants'
 
@@ -406,26 +406,32 @@ function App() {
   }, [])
 
   return (
-    <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <MenuBar
-        nodes={nodes}
-        edges={edges}
-        variables={variables}
-        setNodes={setNodes}
-        setEdges={setEdges}
-        setVariables={setVariables}
-        setSelectedEdge={setSelectedEdge}
-        setShowPreview={setShowPreview}
-        setShowVariableEditor={setShowVariableEditor}
-        setCurrentPath={setCurrentPath}
-        setCurrentContainerId={setCurrentContainerId}
-      />
+    <LanguageProvider>
+      <div style={{ width: '100vw', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <MenuBar
+          nodes={nodes}
+          edges={edges}
+          variables={variables}
+          setNodes={setNodes}
+          setEdges={setEdges}
+          setVariables={setVariables}
+          setSelectedEdge={setSelectedEdge}
+          setShowPreview={setShowPreview}
+          setShowVariableEditor={setShowVariableEditor}
+          setCurrentPath={setCurrentPath}
+          setCurrentContainerId={setCurrentContainerId}
+        />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'row' }}>
         <OperPanel 
           nodes={nodes}
           setNodes={setNodes}
           setSelectedEdge={setSelectedEdge}
-          createNode={createNode}
+          createNode={(type, position, nodes, parentId) => {
+            // 从LanguageProvider获取当前语言
+            const languageElement = document.querySelector('select[data-language-selector]');
+            const currentLang = languageElement ? (languageElement as HTMLSelectElement).value as 'zh' | 'en' : 'zh';
+            return createNode(type, position, nodes, parentId, true, currentLang);
+          }}
           currentPath={currentPath}
           setCurrentPath={setCurrentPath}
           currentContainerId={currentContainerId}
@@ -516,7 +522,8 @@ function App() {
           onSave={setVariables} 
         />
       )}
-    </div>
+      </div>
+    </LanguageProvider>
   )
 }
 

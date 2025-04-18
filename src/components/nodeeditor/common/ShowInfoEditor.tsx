@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CustomVariable } from '../../VariableEditor';
 import VariableSelector from '../VariableSelector';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface ShowInfoEditorProps {
   showInfo: string;
@@ -9,6 +10,7 @@ interface ShowInfoEditorProps {
 }
 
 const ShowInfoEditor: React.FC<ShowInfoEditorProps> = ({ showInfo, setShowInfo, variables }) => {
+  const { t } = useLanguage();
   const [showVariableSelector, setShowVariableSelector] = useState(false);
 
   const addVariableReference = (variable: CustomVariable) => {
@@ -23,7 +25,7 @@ const ShowInfoEditor: React.FC<ShowInfoEditorProps> = ({ showInfo, setShowInfo, 
   return (
   <>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-      <label style={{ display: 'block', marginBottom: '5px' }}>显示信息:</label>
+      <label style={{ display: 'block', marginBottom: '5px' }}>{t.showInfo}:</label>
       <button 
           onClick={() => setShowVariableSelector(!showVariableSelector)}
           style={{
@@ -36,7 +38,7 @@ const ShowInfoEditor: React.FC<ShowInfoEditorProps> = ({ showInfo, setShowInfo, 
             cursor: 'pointer',
           }}
         >
-          插入变量
+          {t.insertVariable}
         </button>
     </div>
     {showVariableSelector && (
@@ -48,14 +50,14 @@ const ShowInfoEditor: React.FC<ShowInfoEditorProps> = ({ showInfo, setShowInfo, 
           maxHeight: '200px',
           overflowY: 'auto'
         }}>
-          <h4>选择变量</h4>
+          <h4>{t.selectVariable}</h4>
           {variables.length > 0 ? (
             <VariableSelector 
               variables={variables} 
               onSelect={(variable) => addVariableReference(variable)}
             />
           ) : (
-            <p>没有可用变量</p>
+            <p>{t.noAvailableVariables}</p>
           )}
           <button 
             onClick={() => setShowVariableSelector(false)}
@@ -68,7 +70,7 @@ const ShowInfoEditor: React.FC<ShowInfoEditorProps> = ({ showInfo, setShowInfo, 
               cursor: 'pointer',
             }}
           >
-            关闭
+            {t.close}
           </button>
         </div>
       )}

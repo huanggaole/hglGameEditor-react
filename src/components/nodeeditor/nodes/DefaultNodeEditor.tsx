@@ -1,6 +1,5 @@
 import React from 'react';
 import { Node } from 'reactflow';
-import { NODE_LABELS } from '../constants';
 import NodeBaseInfo from '../common/NodeBaseInfo';
 import ActionButtons from '../common/ActionButtons';
 

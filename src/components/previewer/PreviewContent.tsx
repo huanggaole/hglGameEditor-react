@@ -1,12 +1,13 @@
 import React from 'react';
 import { PreviewContentProps } from './types';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const PreviewContent: React.FC<PreviewContentProps> = ({ currentNode, parseVariables }) => {
   // 判断是否为条件分歧节点
   const isConditionNode = currentNode?.type === 'condition';
   // 获取条件列表
   const conditions = isConditionNode ? (currentNode?.data?.conditions || []) : [];
-  
+  const { t } = useLanguage();
   return (
     <div className="preview-content" style={{
       flex: 1,
@@ -24,7 +25,7 @@ const PreviewContent: React.FC<PreviewContentProps> = ({ currentNode, parseVaria
       {/* 显示节点内容 */}
       {currentNode?.type !== 'container' && (
         <div>
-          {parseVariables(currentNode?.data?.showInfo || '无内容显示')}
+          {parseVariables(currentNode?.data?.showInfo || t.noContentDisplay)}
         </div>
       )}
       

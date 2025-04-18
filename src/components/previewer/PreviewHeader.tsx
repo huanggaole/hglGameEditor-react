@@ -1,7 +1,9 @@
 import React from 'react';
 import { PreviewHeaderProps } from './types';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const PreviewHeader: React.FC<PreviewHeaderProps> = ({ currentType, onClose }) => {
+  const { t } = useLanguage();
   return (
     <div className="preview-header" style={{
       display: 'flex',
@@ -10,9 +12,9 @@ const PreviewHeader: React.FC<PreviewHeaderProps> = ({ currentType, onClose }) =
       marginBottom: '20px'
     }}>
       <h2 style={{ margin: 0 }}>
-        {currentType === 'start' ? '游戏开始' : 
-         currentType === 'plot' ? '剧情页面' : 
-         currentType === 'end' ? '游戏结局' : ''}
+        {currentType === 'start' ? t.gameStartTitle : 
+         currentType === 'plot' ? t.plotPageTitle : 
+         currentType === 'end' ? t.gameEndTitle : ''}
       </h2>
       <button 
         onClick={onClose}
@@ -25,7 +27,7 @@ const PreviewHeader: React.FC<PreviewHeaderProps> = ({ currentType, onClose }) =
           cursor: 'pointer'
         }}
       >
-        关闭
+        {t.close}
       </button>
     </div>
   );

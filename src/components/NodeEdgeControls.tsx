@@ -1,5 +1,6 @@
 import React from 'react';
 import { Node, Edge } from 'reactflow';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface NodeControlsProps {
   node: Node;
@@ -43,7 +44,7 @@ export const NodeControls: React.FC<NodeControlsProps> = ({ node, onEdit, onDele
           cursor: 'pointer',
         }}
       >
-        编辑
+        {useLanguage().t.edit || '编辑'}
       </button>
       {node.type === 'container' && (
         <button
@@ -61,7 +62,7 @@ export const NodeControls: React.FC<NodeControlsProps> = ({ node, onEdit, onDele
             cursor: 'pointer',
           }}
         >
-          进入
+          {useLanguage().t.enter || '进入'}
         </button>
       )}
       {node.type !== 'start' && node.type !== 'entry' && onCopy && (
@@ -80,7 +81,7 @@ export const NodeControls: React.FC<NodeControlsProps> = ({ node, onEdit, onDele
             cursor: 'pointer',
           }}
         >
-          复制
+          {useLanguage().t.copy || '复制'}
         </button>
       )}
       {node.type !== 'start' && (
@@ -99,7 +100,7 @@ export const NodeControls: React.FC<NodeControlsProps> = ({ node, onEdit, onDele
             cursor: 'pointer',
           }}
         >
-          删除
+          {useLanguage().t.delete || '删除'}
         </button>
       )}
     </div>
@@ -134,7 +135,7 @@ export const EdgeControls: React.FC<EdgeControlsProps> = ({ edge, onEdit, onDele
           cursor: 'pointer',
         }}
       >
-        编辑
+        {useLanguage().t.edit || '编辑'}
       </button>
       <button
         onClick={(e) => {
@@ -151,7 +152,7 @@ export const EdgeControls: React.FC<EdgeControlsProps> = ({ edge, onEdit, onDele
           cursor: 'pointer',
         }}
       >
-        删除
+        {useLanguage().t.delete || '删除'}
       </button>
     </div>
   );

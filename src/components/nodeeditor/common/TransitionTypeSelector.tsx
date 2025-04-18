@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface TransitionTypeSelectorProps {
   transitionType: string;
@@ -9,16 +10,17 @@ const TransitionTypeSelector: React.FC<TransitionTypeSelectorProps> = ({
   transitionType,
   setTransitionType
 }) => {
+  const { t } = useLanguage();
   return (
     <div style={{ marginBottom: '10px' }}>
-      <label style={{ display: 'block', marginBottom: '5px' }}>跳转方式:</label>
+      <label style={{ display: 'block', marginBottom: '5px' }}>{t.transitionMethod}:</label>
       <select
         value={transitionType}
         onChange={(e) => setTransitionType(e.target.value)}
         style={{ width: '100%', padding: '5px' }}
       >
-        <option value="goto">直接跳转</option>
-        <option value="btnsto">按钮选择</option>
+        <option value="goto">{t.directTransition}</option>
+        <option value="btnsto">{t.buttonSelection}</option>
       </select>
     </div>
   );

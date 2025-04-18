@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 // 变量类型枚举
 export type VariableType = 'string' | 'number' | 'boolean' | 'object';
@@ -32,11 +33,11 @@ const VariableItem: React.FC<{
   const [children, setChildren] = useState<CustomVariable[]>(variable.children || []);
   const [nameError, setNameError] = useState('');
   const [expanded, setExpanded] = useState(false);
-
+  const { t } = useLanguage();
   // 验证变量名（只允许英文和数字）
   const validateName = (value: string) => {
     if (!/^[a-zA-Z0-9]+$/.test(value)) {
-      setNameError('变量名只能包含英文和数字');
+      setNameError(t.variableNameError);
       return false;
     }
     setNameError('');
@@ -126,7 +127,7 @@ const VariableItem: React.FC<{
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
         <div style={{ flex: 1, marginRight: '10px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>变量名:</label>
+          <label style={{ display: 'block', marginBottom: '5px' }}>{t.variableName}:</label>
           <input
             type="text"
             value={name}
@@ -141,30 +142,30 @@ const VariableItem: React.FC<{
         </div>
         
         <div style={{ flex: 1, marginRight: '10px' }}>
-          <label style={{ display: 'block', marginBottom: '5px' }}>类型:</label>
+          <label style={{ display: 'block', marginBottom: '5px' }}>{t.variableType}:</label>
           <select
             value={type}
             onChange={handleTypeChange}
             style={{ width: '100%', padding: '5px' }}
           >
-            <option value="string">字符串 (String)</option>
-            <option value="number">数字 (Number)</option>
-            <option value="boolean">布尔值 (Boolean)</option>
-            <option value="object">对象 (Object)</option>
+            <option value="string">{t.stringType}</option>
+            <option value="number">{t.numberType}</option>
+            <option value="boolean">{t.booleanType}</option>
+            <option value="object">{t.objectType}</option>
           </select>
         </div>
         
         {type !== 'object' && (
           <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>默认值:</label>
+            <label style={{ display: 'block', marginBottom: '5px' }}>{t.defaultValue}:</label>
             {type === 'boolean' ? (
               <select
                 value={String(defaultValue)}
                 onChange={handleDefaultValueChange}
                 style={{ width: '100%', padding: '5px' }}
               >
-                <option value="true">是 (true)</option>
-                <option value="false">否 (false)</option>
+                <option value="true">{t.booleanTrue}</option>
+                <option value="false">{t.booleanFalse}</option>
               </select>
             ) : (
               <input
@@ -179,7 +180,7 @@ const VariableItem: React.FC<{
       </div>
       
       <div style={{ marginBottom: '10px' }}>
-        <label style={{ display: 'block', marginBottom: '5px' }}>描述:</label>
+        <label style={{ display: 'block', marginBottom: '5px' }}>{t.description}:</label>
         <input
           type="text"
           value={description}
@@ -200,7 +201,7 @@ const VariableItem: React.FC<{
                 borderRadius: '4px'
               }}
             >
-              {expanded ? '收起子变量' : '展开子变量'}
+              {expanded ? t.collapseChildren : t.expandChildren}
             </button>
             <button 
               onClick={addChildVariable}
@@ -212,7 +213,7 @@ const VariableItem: React.FC<{
                 borderRadius: '4px'
               }}
             >
-              添加子变量
+              {t.addChildVariable}
             </button>
           </div>
           
@@ -239,7 +240,7 @@ const VariableItem: React.FC<{
           marginTop: '10px'
         }}
       >
-        删除
+        {t.delete}
       </button>
     </div>
   );
@@ -247,6 +248,7 @@ const VariableItem: React.FC<{
 
 // 主变量编辑器组件
 const VariableEditor: React.FC<VariableEditorProps> = ({ variables, onClose, onSave }) => {
+  const { t } = useLanguage();
   const [variableList, setVariableList] = useState<CustomVariable[]>(variables);
 
   // 添加新变量
@@ -300,7 +302,7 @@ const VariableEditor: React.FC<VariableEditorProps> = ({ variables, onClose, onS
         maxHeight: '80vh',
         overflow: 'auto'
       }}>
-        <h2 style={{ marginTop: 0 }}>变量设置</h2>
+        <h2 style={{ marginTop: 0 }}>{t.variableTitle}</h2>
         
         <div style={{ marginBottom: '20px' }}>
           <button 
@@ -314,13 +316,13 @@ const VariableEditor: React.FC<VariableEditorProps> = ({ variables, onClose, onS
               fontSize: '16px'
             }}
           >
-            添加变量
+            {t.addVariable}
           </button>
         </div>
         
         {variableList.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
-            暂无变量，请点击"添加变量"按钮创建
+            {t.noVariablesPrompt}
           </div>
         ) : (
           variableList.map((variable, index) => (
@@ -345,7 +347,7 @@ const VariableEditor: React.FC<VariableEditorProps> = ({ variables, onClose, onS
               fontSize: '16px'
             }}
           >
-            取消
+            {t.cancel}
           </button>
           <button 
             onClick={handleSave}
@@ -358,7 +360,7 @@ const VariableEditor: React.FC<VariableEditorProps> = ({ variables, onClose, onS
               fontSize: '16px'
             }}
           >
-            确定
+            {t.confirm}
           </button>
         </div>
       </div>

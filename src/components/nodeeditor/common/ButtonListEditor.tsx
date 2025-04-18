@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface ButtonListEditorProps {
   buttons: {title: string}[];
@@ -9,6 +10,7 @@ const ButtonListEditor: React.FC<ButtonListEditorProps> = ({
   buttons,
   setButtons
 }) => {
+  const { t } = useLanguage();
   // 添加按钮
   const addButton = () => {
     setButtons([...buttons, { title: '' }]);
@@ -30,14 +32,14 @@ const ButtonListEditor: React.FC<ButtonListEditorProps> = ({
 
   return (
     <div style={{ marginBottom: '10px' }}>
-      <label style={{ display: 'block', marginBottom: '5px' }}>按钮列表:</label>
+      <label style={{ display: 'block', marginBottom: '5px' }}>{t.buttonList}:</label>
       {buttons.map((button, index) => (
         <div key={index} style={{ display: 'flex', marginBottom: '5px' }}>
           <input
             type="text"
             value={button.title}
             onChange={(e) => updateButtonTitle(index, e.target.value)}
-            placeholder="按钮标题"
+            placeholder={t.buttonTitle}
             style={{ flex: 1, marginRight: '5px', padding: '5px' }}
           />
           <button 
@@ -51,7 +53,7 @@ const ButtonListEditor: React.FC<ButtonListEditorProps> = ({
               cursor: 'pointer',
             }}
           >
-            删除
+            {t.removeButton}
           </button>
         </div>
       ))}
@@ -67,7 +69,7 @@ const ButtonListEditor: React.FC<ButtonListEditorProps> = ({
           marginTop: '5px'
         }}
       >
-        添加按钮
+        {t.addButton}
       </button>
     </div>
   );

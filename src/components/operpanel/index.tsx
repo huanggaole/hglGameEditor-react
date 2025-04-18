@@ -1,6 +1,7 @@
 import React from 'react';
 import { Node, Edge } from 'reactflow';
-import { NODE_TYPES, NODE_LABELS } from '../nodeeditor/constants';
+import { NODE_TYPES, getNodeLabels } from '../nodeeditor/constants';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface OperPanelProps {
   nodes: Node[];
@@ -16,6 +17,9 @@ interface OperPanelProps {
 
 // 移除未使用的setEdges参数
 const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge, createNode, currentPath, setCurrentPath, currentContainerId, setCurrentContainerId }) => {
+  // 使用语言上下文
+  const { currentLanguage, t } = useLanguage();
+  
   // 处理返回上一级
   const handleGoBack = () => {
     if (currentPath.length > 1) {
@@ -48,7 +52,7 @@ const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge,
             cursor: currentPath.length > 1 ? 'pointer' : 'not-allowed'
           }}
         >
-          ↑ 
+          {t.backButton}
         </button>
         <div style={{ 
           flex: 1,
@@ -94,7 +98,7 @@ const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge,
             cursor: 'pointer'
           }}
         >
-          <div style={{ fontWeight: 'bold' }}>{NODE_LABELS[NODE_TYPES.EXIT]}</div>
+          <div style={{ fontWeight: 'bold' }}>{t.exitNode}</div>
         </button>
       )}
 
@@ -106,7 +110,7 @@ const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge,
         }}
         style={{ border: '2px solid #888888', borderRadius: '4px', padding: '8px' }}
       >
-        {NODE_LABELS[NODE_TYPES.PLOT]}
+        {getNodeLabels()[NODE_TYPES.PLOT]}
       </button>
       <button 
         onClick={() => {
@@ -116,7 +120,7 @@ const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge,
         }}
         style={{ border: '2px solid #00cc00', borderRadius: '4px', padding: '8px' }}
       >
-        {NODE_LABELS[NODE_TYPES.END]}
+        {getNodeLabels()[NODE_TYPES.END]}
       </button>
       <button 
         onClick={() => {
@@ -126,7 +130,7 @@ const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge,
         }}
         style={{ border: '2px dashed #666666', borderRadius: '4px', padding: '8px' }}
       >
-        {NODE_LABELS[NODE_TYPES.CONTAINER]}
+        {getNodeLabels()[NODE_TYPES.CONTAINER]}
       </button>
       <button 
         onClick={() => {
@@ -136,7 +140,7 @@ const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge,
         }}
         style={{ border: '2px solid #ff9800', borderRadius: '4px', padding: '8px' }}
       >
-        {NODE_LABELS[NODE_TYPES.CONDITION]}
+        {getNodeLabels()[NODE_TYPES.CONDITION]}
       </button>
     </div>
   );

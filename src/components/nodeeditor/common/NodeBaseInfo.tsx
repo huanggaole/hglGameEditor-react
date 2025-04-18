@@ -1,6 +1,7 @@
 import React from 'react';
 import { Node } from 'reactflow';
-import { NODE_LABELS } from '../constants';
+import { getNodeLabels, NODE_LABELS } from '../constants';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface NodeBaseInfoProps {
   node: Node;
@@ -9,12 +10,13 @@ interface NodeBaseInfoProps {
 }
 
 const NodeBaseInfo: React.FC<NodeBaseInfoProps> = ({ node, mname, setMname }) => {
+  const { t } = useLanguage();
   return (
     <>
-      <h3>编辑 {NODE_LABELS[node.type as keyof typeof NODE_LABELS] || node.type} 节点</h3>
+      <h3>{t.edit} {getNodeLabels()[node.type as keyof typeof NODE_LABELS] || node.type}</h3>
       
       <div style={{ marginBottom: '10px' }}>
-        <label style={{ display: 'block', marginBottom: '5px' }}>节点编号:</label>
+        <label style={{ display: 'block', marginBottom: '5px' }}>{t.nodeId}:</label>
         <input 
           type="text" 
           value={node.id} 
@@ -24,7 +26,7 @@ const NodeBaseInfo: React.FC<NodeBaseInfoProps> = ({ node, mname, setMname }) =>
       </div>
 
       <div style={{ marginBottom: '10px' }}>
-        <label style={{ display: 'block', marginBottom: '5px' }}>模块名称 (mname):</label>
+        <label style={{ display: 'block', marginBottom: '5px' }}>{t.moduleName}:</label>
         <input 
           type="text" 
           value={mname} 

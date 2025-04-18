@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CustomVariable } from '../VariableEditor';
 import VariableSelector from './VariableSelector';
 import { VariableUpdate } from './types';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface VariableEditorProps {
   updateVariables: VariableUpdate;
@@ -72,7 +73,7 @@ const VariableEditor: React.FC<VariableEditorProps> = ({
   return (
     <div style={{ marginBottom: '10px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-        <label>变量更新:</label>
+        <label>{useLanguage().t.variableUpdate}:</label>
         <button 
           onClick={() => setShowVariableEditor(!showVariableEditor)}
           style={{
@@ -85,7 +86,7 @@ const VariableEditor: React.FC<VariableEditorProps> = ({
             cursor: 'pointer',
           }}
         >
-          选择变量
+          {useLanguage().t.selectVariable}
         </button>
       </div>
 
@@ -99,7 +100,7 @@ const VariableEditor: React.FC<VariableEditorProps> = ({
           maxHeight: '200px',
           overflowY: 'auto'
         }}>
-          <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>当前变量更新:</div>
+          <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{useLanguage().t.currentVariableUpdates}:</div>
           {Object.entries(updateVariables).map(([varPath, value]) => (
             <div key={varPath} style={{ 
               display: 'flex', 
@@ -177,7 +178,7 @@ const VariableEditor: React.FC<VariableEditorProps> = ({
       {selectedVariable && (
         <div style={{ marginTop: '10px' }}>
           <div style={{ marginBottom: '10px' }}>
-            <label style={{ display: 'block', marginBottom: '5px' }}>变量值:</label>
+            <label style={{ display: 'block', marginBottom: '5px' }}>{useLanguage().t.inputVariableValue}:</label>
             <input
               // type={getVariableType(selectedVariable) === 'number' ? 'number' : 'text'}
               value={variableValue}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 interface ActionButtonsProps {
   onClose: () => void;
@@ -6,10 +7,11 @@ interface ActionButtonsProps {
 }
 
 const ActionButtons: React.FC<ActionButtonsProps> = ({ onClose, onSave }) => {
+  const { t } = useLanguage();
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '15px' }}>
-      <button onClick={onClose}>取消</button>
-      <button onClick={onSave}>保存</button>
+      <button onClick={onClose}>{t.cancel}</button>
+      <button onClick={onSave}>{t.save}</button>
     </div>
   );
 };

@@ -1,5 +1,19 @@
 import { Node, Edge, Connection } from 'reactflow';
 import { NODE_TYPES, NODE_LABELS } from '../components/nodeeditor/constants';
+import locales from '../locales';
+
+// 获取当前语言的节点名称
+const getNodeName = (type: string, id: string, language: string = 'zh') => {
+  const texts = locales[language as 'zh' | 'en'];
+  
+  if (type === NODE_TYPES.START) {
+    return texts.startNodeName;
+  } else if (type === NODE_TYPES.ENTRY) {
+    return texts.entryNodeName;
+  } else {
+    return `${texts.defaultNodeName}${id}`;
+  }
+};
 
 const initialNodes: Node[] = [
   {
@@ -7,7 +21,7 @@ const initialNodes: Node[] = [
     position: { x: 0, y: 0 },
     data: { 
       label: NODE_LABELS[NODE_TYPES.START],
-      mname: '开始',
+      mname: locales.zh.startNodeName, // 默认使用中文
       showInfo: '',
       parentId: null // 设置parentId为null，确保在根目录显示
     },
@@ -35,7 +49,7 @@ const getMaxNodeId = (nodes: Node[]) => {
   return maxId;
 };
 
-const createNode = (type: string, position: {x: number, y: number}, existingNodes: Node[] = [], parentId: string | null = null, createEntryNode: boolean = true) => {
+const createNode = (type: string, position: {x: number, y: number}, existingNodes: Node[] = [], parentId: string | null = null, createEntryNode: boolean = true, language: string = 'zh') => {
   // 确保nodeIdCounter大于现有节点中的最大ID
   if (existingNodes.length > 0 && nodeIdCounter <= getMaxNodeId(existingNodes)) {
     nodeIdCounter = getMaxNodeId(existingNodes) + 1;
@@ -47,7 +61,7 @@ const createNode = (type: string, position: {x: number, y: number}, existingNode
   // 根据节点类型创建不同的数据结构
   const nodeData: any = { 
     label,
-    mname: `模块${id}`,
+    mname: getNodeName(type, id, language),
     parentId // 添加父节点ID，用于层级结构
   };
   
@@ -76,7 +90,7 @@ const createNode = (type: string, position: {x: number, y: number}, existingNode
       position: entryPosition,
       data: {
         label: NODE_LABELS[NODE_TYPES.ENTRY],
-        mname: '入口',
+        mname: getNodeName(NODE_TYPES.ENTRY, '', language),
         parentId: id // 设置父节点ID为当前创建的收纳节点ID
       },
       type: NODE_TYPES.ENTRY
@@ -108,10 +122,13 @@ const createEdge = (params: Connection, existingEdges: Edge[] = [], data: any = 
   // 使用累加器生成边ID
   const id = `e${edgeIdCounter++}`;
   
-  // 创建新边，只保留updateVariables数据
+  // 创建新边，确保source和target为必需的字符串
   const newEdge: Edge = {
-    ...params,
     id,
+    source: params.source || '',
+    target: params.target || '',
+    sourceHandle: params.sourceHandle,
+    targetHandle: params.targetHandle,
     data: {
       updateVariables: data.updateVariables || {}
     }
@@ -126,4 +143,4 @@ const resetCounters = () => {
   edgeIdCounter = 1;
 };
 
-export { initialNodes, initialEdges, createNode, createEdge, resetCounters };
+export { initialNodes, initialEdges, createNode, createEdge, resetCounters, getNodeName };
