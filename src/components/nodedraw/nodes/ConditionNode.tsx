@@ -3,6 +3,7 @@ import { NodeControls } from '../../NodeEdgeControls';
 import { nodeStyles } from '../common/nodeStyles';
 import { NODE_TYPES } from '../../nodeeditor/constants';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import { ConditionType } from '../../nodeeditor/constants/conditionTypes';
 
 // 文本截断辅助函数
 const truncateText = (text: string): string => {
@@ -15,7 +16,27 @@ const truncateText = (text: string): string => {
 export const ConditionNode = ({ data, id, selected }: NodeProps) => {
   // 获取条件分支列表，默认为空数组
   const conditions = data.conditions || [];
-  
+  // 定义一个映射函数，将 ConditionType 枚举值转换为当前语言下的字符串
+  const conditionTypeToString = (type: ConditionType): string => {
+    switch (type) {
+      case ConditionType.EQUALS:
+        return useLanguage().t.equals;
+      case ConditionType.NOT_EQUALS:
+        return useLanguage().t.notEquals;
+      case ConditionType.GREATER_THAN:
+        return useLanguage().t.greaterThan;
+      case ConditionType.LESS_THAN:
+        return useLanguage().t.lessThan;
+      case ConditionType.GREATER_THAN_OR_EQUALS:
+        return useLanguage().t.greaterThanOrEquals;
+      case ConditionType.LESS_THAN_OR_EQUALS:
+        return useLanguage().t.lessThanOrEquals;
+      case ConditionType.CONTAINS:
+        return useLanguage().t.contains;
+      default:
+        return useLanguage().t.equals;
+    }
+  }
   return (
     <div style={{
       ...nodeStyles.condition,
@@ -32,7 +53,7 @@ export const ConditionNode = ({ data, id, selected }: NodeProps) => {
             <div style={{ fontWeight: 'bold', marginBottom: '3px' }}>{useLanguage().t.conditionList}:</div>
             {conditions.map((condition: any, index: number) => (
               <div key={index} style={{ marginLeft: '10px', fontSize: '11px' }}>
-                {index + 1}. {condition.variable} {condition.type} {condition.value} → {condition.label || useLanguage().t.condition + `${index+1}`}
+                {index + 1}. {condition.variable} {conditionTypeToString(condition.type)} {condition.value} → {condition.label || useLanguage().t.condition + `${index+1}`}
               </div>
             ))}
           </div>

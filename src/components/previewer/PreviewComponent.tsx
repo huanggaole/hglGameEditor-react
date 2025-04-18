@@ -102,7 +102,7 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
           // 获取变量当前值
           const variableValue = parseVariables(condition.variable, tempVariables);
           console.log(`检查条件: ${condition.variable} (${variableValue}) ${condition.type} ${condition.value}`);
-          
+          console.log(variableValue, condition.value);
           // 根据条件类型进行判断
           let conditionMet = false;
           switch (condition.type) {

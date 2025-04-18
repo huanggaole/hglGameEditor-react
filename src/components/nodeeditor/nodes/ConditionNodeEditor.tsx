@@ -6,6 +6,8 @@ import NodeBaseInfo from '../common/NodeBaseInfo';
 import NoteEditor from '../common/NoteEditor';
 import ActionButtons from '../common/ActionButtons';
 import VariableSelector from '../VariableSelector';
+import { ConditionType, conditionTypeToTransKey, variableTypeToConditionTypes } from '../constants/conditionTypes';
+import { zhCN, enUS } from '../../../locales';
 
 interface ConditionNodeEditorProps {
   node: Node;
@@ -13,8 +15,8 @@ interface ConditionNodeEditorProps {
   setMname: (value: string) => void;
   showInfo: string;
   setShowInfo: (value: string) => void;
-  conditions: {variable: string, type: string, value: string, label: string}[];
-  setConditions: (conditions: {variable: string, type: string, value: string, label: string}[]) => void;
+  conditions: {variable: string, type: ConditionType, value: string, label: string}[];
+  setConditions: (conditions: {variable: string, type: ConditionType, value: string, label: string}[]) => void;
   onClose: () => void;
   updateNode: (nodeId: string, data: any) => void;
 }
@@ -36,8 +38,8 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
   const [showAddCondition, setShowAddCondition] = useState(false);
   const [editingConditionIndex, setEditingConditionIndex] = useState<number | null>(null);
   const [selectedVariable, setSelectedVariable] = useState<CustomVariable | null>(null);
-  const [newCondition, setNewCondition] = useState<{variable: string, type: string, value: string, label: string}>(
-    {variable: '', type: t.equals, value: '', label: ''}
+  const [newCondition, setNewCondition] = useState<{variable: string, type: ConditionType, value: string, label: string}>(
+    {variable: '', type: ConditionType.EQUALS, value: '', label: ''}
   );
 
   useEffect(() => {
@@ -65,7 +67,7 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
       } else {
         setConditions([...conditions, { ...newCondition }]);
       }
-      setNewCondition({variable: '', type: t.equals, value: '', label: ''});
+      setNewCondition({variable: '', type: ConditionType.EQUALS, value: '', label: ''});
       setShowAddCondition(false);
     }
   };
@@ -94,42 +96,57 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
     }
   };
   
-  const getDefaultConditionType = (variableType: string): string => {
-    switch(variableType) {
-      case 'number': return t.equals;
-      case 'string': return t.equals;
-      case 'boolean': return t.equals;
-      default: return t.equals;
-    }
+  const getDefaultConditionType = (variableType: string): ConditionType => {
+    return variableTypeToConditionTypes[variableType]?.[0] || ConditionType.EQUALS;
   };
   
   const getConditionTypeOptions = (variableType: string) => {
-    switch(variableType) {
-      case 'number':
-        return [
-          <option key="eq" value={t.equals}>{t.equals}</option>,
-          <option key="neq" value={t.notEquals}>{t.notEquals}</option>,
-          <option key="gt" value={t.greaterThan}>{t.greaterThan}</option>,
-          <option key="lt" value={t.lessThan}>{t.lessThan}</option>,
-          <option key="gte" value={t.greaterThanOrEquals}>{t.greaterThanOrEquals}</option>,
-          <option key="lte" value={t.lessThanOrEquals}>{t.lessThanOrEquals}</option>
-        ];
-      case 'string':
-        return [
-          <option key="eq" value={t.equals}>{t.equals}</option>,
-          <option key="contains" value={t.contains}>{t.contains}</option>
-        ];
-      case 'boolean':
-        return [
-          <option key="eq" value={t.equals}>{t.equals}</option>,
-          <option key="neq" value={t.notEquals}>{t.notEquals}</option>
-        ];
-      default:
-        return [
-          <option key="eq" value={t.equals}>{t.equals}</option>
-        ];
-    }
+    const availableTypes = variableTypeToConditionTypes[variableType] || [ConditionType.EQUALS];
+    return availableTypes.map(type => (
+      <option key={type} value={type}>{t[conditionTypeToTransKey[type]]}</option>
+    ));
   };
+
+  // 定义一个映射函数，将 ConditionType 枚举值转换为当前语言下的字符串
+  const conditionTypeToString = (type: ConditionType): string => {
+    switch (type) {
+      case ConditionType.EQUALS:
+        return t.equals;
+      case ConditionType.NOT_EQUALS:
+        return t.notEquals;
+      case ConditionType.GREATER_THAN:
+        return t.greaterThan;
+      case ConditionType.LESS_THAN:
+        return t.lessThan;
+      case ConditionType.GREATER_THAN_OR_EQUALS:
+        return t.greaterThanOrEquals;
+      case ConditionType.LESS_THAN_OR_EQUALS:
+        return t.lessThanOrEquals;
+      case ConditionType.CONTAINS:
+        return t.contains;
+      default:
+        return t.equals;
+    }
+  }
+  // 定义一个映射函数，将字符串安全转换为 ConditionType 枚举值
+  const stringToConditionType = (key: string): ConditionType => {
+    if(key == zhCN.equals || key == enUS.equals){
+      return ConditionType.EQUALS;
+    } else if(key == zhCN.notEquals || key == enUS.notEquals){
+      return ConditionType.NOT_EQUALS; 
+    } else if(key == zhCN.greaterThan || key == enUS.greaterThan){
+      return ConditionType.GREATER_THAN; 
+    } else if(key == zhCN.lessThan || key == enUS.lessThan){
+      return ConditionType.LESS_THAN; 
+    } else if(key == zhCN.greaterThanOrEquals || key == enUS.greaterThanOrEquals){
+      return ConditionType.GREATER_THAN_OR_EQUALS; 
+    } else if(key == zhCN.lessThanOrEquals|| key == enUS.lessThanOrEquals){
+      return ConditionType.LESS_THAN_OR_EQUALS;
+    } else if(key == zhCN.contains || key == enUS.contains){
+      return ConditionType.CONTAINS; 
+    }
+    return ConditionType.EQUALS;
+  }
 
   return (
     <>
@@ -147,7 +164,7 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
             onClick={() => {
               setShowAddCondition(!showAddCondition);
               setEditingConditionIndex(null);
-              setNewCondition({variable: '', type: t.equals, value: '', label: ''});
+              setNewCondition({variable: '', type: ConditionType.EQUALS, value: '', label: ''});
             }}
             style={{
               backgroundColor: '#4a90e2',
@@ -184,7 +201,7 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
           }}>
             <div style={{ flex: 1 }}>
               <strong>{t.variableLabel}:</strong> {condition.variable}, 
-              <strong>{t.conditionType}:</strong> {condition.type}, 
+              <strong>{t.conditionType}:</strong> {conditionTypeToString(condition.type)}, 
               <strong>{t.conditionValue}:</strong> {condition.value}
             </div>
             <div>
@@ -286,7 +303,16 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
             <label style={{ display: 'block', marginBottom: '5px' }}>{t.conditionType}:</label>
             <select
               value={newCondition.type}
-              onChange={(e) => setNewCondition({...newCondition, type: e.target.value})}
+              onChange={(e) => {
+                const selectedOption = e.target.selectedOptions[0]; // 获取选中的第一个选项
+                if (selectedOption) {
+                  console.log('Selected option text:', selectedOption.textContent); // 安全访问文本内容
+                  const selectedValue = selectedOption.textContent || '';
+                  if (stringToConditionType(selectedValue) !== undefined) {
+                    setNewCondition({ ...newCondition, type: stringToConditionType(selectedValue) });
+                  }
+                }
+              }}
               style={{ width: '100%', padding: '5px' }}
               disabled={!selectedVariable}
             >
@@ -309,7 +335,7 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
               onClick={() => {
                 setShowAddCondition(false);
                 setEditingConditionIndex(null);
-                setNewCondition({variable: '', type: t.equals, value: '', label: ''});
+                setNewCondition({variable: '', type: ConditionType.EQUALS, value: '', label: ''});
               }}
               style={{
                 backgroundColor: '#f5f5f5',

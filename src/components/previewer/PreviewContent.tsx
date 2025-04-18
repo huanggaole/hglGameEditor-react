@@ -70,7 +70,7 @@ const PreviewContent: React.FC<PreviewContentProps> = ({ currentNode, parseVaria
                 conditionMet = !String(variableValue).includes(String(condition.value));
                 break;
             }
-            
+            console.log(conditionMet);
             return (
               <div key={index} style={{ 
                 marginLeft: '10px', 

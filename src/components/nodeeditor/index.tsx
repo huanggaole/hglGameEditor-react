@@ -16,7 +16,7 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
   const [note, setNote] = useState(node.data.note || '');
   const [transitionType, setTransitionType] = useState(node.data.transitionType || 'goto');
   const [buttons, setButtons] = useState<{title: string}[]>(node.data.buttons || []);
-  const [conditions, setConditions] = useState<{variable: string, type: string, value: string, label: string}[]>(
+  const [conditions, setConditions] = useState<{variable: string, type: number, value: string, label: string}[]>(
     node.data.conditions || []
   );
   

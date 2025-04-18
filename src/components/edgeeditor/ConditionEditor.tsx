@@ -28,25 +28,25 @@ const ConditionEditor: React.FC<ConditionEditorProps> = ({
     switch (variableType) {
       case 'string':
         return [
-          { value: '等于', label: '等于' },
-          { value: '包含', label: '包含' }
+          { value: 'equals', label: '等于' },
+          { value: 'contains', label: '包含' }
         ];
       case 'number':
         return [
-          { value: '等于', label: '等于' },
-          { value: '大于', label: '大于' },
-          { value: '小于', label: '小于' },
-          { value: '大于等于', label: '大于等于' },
-          { value: '小于等于', label: '小于等于' },
-          { value: '不等于', label: '不等于' }
+          { value: 'equals', label: '等于' },
+          { value: 'greaterThan', label: '大于' },
+          { value: 'lessThan', label: '小于' },
+          { value: 'greaterThanOrEquals', label: '大于等于' },
+          { value: 'lessThanOrEquals', label: '小于等于' },
+          { value: 'notEquals', label: '不等于' }
         ];
       case 'boolean':
         return [
-          { value: '为真', label: '为真' },
-          { value: '为假', label: '为假' }
+          { value: 'booleanTrue', label: '为真' },
+          { value: 'booleanFalse', label: '为假' }
         ];
       default:
-        return [{ value: '等于', label: '等于' }];
+        return [{ value: 'equals', label: '等于' }];
     }
   };
 
