@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PreviewContentProps } from './types';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { ConditionType } from '../nodeeditor/constants/conditionTypes';
 
 const PreviewContent: React.FC<PreviewContentProps> = ({ currentNode, parseVariables }) => {
   // 判断是否为条件分歧节点
@@ -8,6 +9,13 @@ const PreviewContent: React.FC<PreviewContentProps> = ({ currentNode, parseVaria
   // 获取条件列表
   const conditions = isConditionNode ? (currentNode?.data?.conditions || []) : [];
   const { t } = useLanguage();
+  
+  // 记录条件判断结果到控制台，帮助调试
+  useEffect(() => {
+    if (isConditionNode && conditions.length > 0) {
+      console.log('条件节点内容展示:', currentNode?.data);
+    }
+  }, [isConditionNode, conditions, currentNode]);
   return (
     <div className="preview-content" style={{
       flex: 1,
@@ -45,29 +53,26 @@ const PreviewContent: React.FC<PreviewContentProps> = ({ currentNode, parseVaria
             // 判断条件是否满足
             let conditionMet = false;
             switch (condition.type) {
-              case '等于':
+              case ConditionType.EQUALS:
                 conditionMet = variableValue == condition.value;
                 break;
-              case '不等于':
+              case ConditionType.NOT_EQUALS:
                 conditionMet = variableValue != condition.value;
                 break;
-              case '大于':
+              case ConditionType.GREATER_THAN:
                 conditionMet = Number(variableValue) > Number(condition.value);
                 break;
-              case '小于':
+              case ConditionType.LESS_THAN:
                 conditionMet = Number(variableValue) < Number(condition.value);
                 break;
-              case '大于等于':
+              case ConditionType.GREATER_THAN_OR_EQUALS:
                 conditionMet = Number(variableValue) >= Number(condition.value);
                 break;
-              case '小于等于':
+              case ConditionType.LESS_THAN_OR_EQUALS:
                 conditionMet = Number(variableValue) <= Number(condition.value);
                 break;
-              case '包含':
+              case ConditionType.CONTAINS:
                 conditionMet = String(variableValue).includes(String(condition.value));
-                break;
-              case '不包含':
-                conditionMet = !String(variableValue).includes(String(condition.value));
                 break;
             }
             console.log(conditionMet);

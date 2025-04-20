@@ -24,6 +24,7 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
   const isNoteNode = node.type === NODE_TYPES.CONTAINER || node.type === NODE_TYPES.EXIT;
   const isPlotNode = node.type === NODE_TYPES.PLOT;
   const isStartNode = node.type === NODE_TYPES.START;
+  const isEndNode = node.type === NODE_TYPES.END;
   const isConditionNode = node.type === NODE_TYPES.CONDITION;
 
   // 根据节点类型渲染相应的编辑器组件
@@ -82,6 +83,23 @@ const NodeEditor = ({ node, onClose, updateNode }: NodeEditorProps) => {
           setShowInfo={setShowInfo}
           conditions={conditions}
           setConditions={setConditions}
+          onClose={onClose}
+          updateNode={updateNode}
+        />
+      );
+    } else if (isEndNode) {
+      // 结局节点使用与剧情节点类似的编辑器，包含showInfo字段
+      return (
+        <PlotNodeEditor
+          node={node}
+          mname={mname}
+          setMname={setMname}
+          showInfo={showInfo}
+          setShowInfo={setShowInfo}
+          transitionType={transitionType}
+          setTransitionType={setTransitionType}
+          buttons={buttons}
+          setButtons={setButtons}
           onClose={onClose}
           updateNode={updateNode}
         />

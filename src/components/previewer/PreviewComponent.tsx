@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 // 删除未使用的导入
 import { CustomVariable } from '../VariableEditor';
 import { PreviewType, ButtonInfo, PreviewComponentProps } from './types';
-import { deepCopyVariables, parseVariables, updateVariable } from './VariableUtils';
+import { deepCopyVariables, parseVariables, updateVariable, getVariableValue } from './VariableUtils';
 import PreviewHeader from './PreviewHeader';
 import PreviewContent from './PreviewContent';
 import PreviewActions from './PreviewActions';
+import { ConditionType } from '../nodeeditor/constants/conditionTypes';
 
 const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClose }) => {
   // 临时变量，用于游戏运行时的状态管理
@@ -100,35 +101,35 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
         
         if (edge && condition.variable && condition.type && condition.value !== undefined) {
           // 获取变量当前值
-          const variableValue = parseVariables(condition.variable, tempVariables);
-          console.log(`检查条件: ${condition.variable} (${variableValue}) ${condition.type} ${condition.value}`);
-          console.log(variableValue, condition.value);
-          // 根据条件类型进行判断
+          const variableValue = getVariableValue(condition.variable, tempVariables);
+          // console.log(`变量详情: variable=${condition.variable}, 类型=${typeof variableValue}, 值=${JSON.stringify(variableValue)}`);
+          // console.log(`比较: ${variableValue} (${typeof variableValue}) ${condition.type} ${condition.value} (${typeof condition.value})`);
+          // console.log(`临时变量状态:`, JSON.stringify(tempVariables, null, 2));
+          // console.log(`检查条件: ${condition.variable} (${variableValue}) ${condition.type} ${condition.value}`);
+          // console.log(variableValue, condition.value);
+          // 判断条件是否满足
           let conditionMet = false;
           switch (condition.type) {
-            case '等于':
-              conditionMet = variableValue == condition.value;
+            case ConditionType.EQUALS:
+              conditionMet = String(variableValue) == String(condition.value);
               break;
-            case '不等于':
-              conditionMet = variableValue != condition.value;
+            case ConditionType.NOT_EQUALS:
+              conditionMet = String(variableValue) != String(condition.value);
               break;
-            case '大于':
+            case ConditionType.GREATER_THAN:
               conditionMet = Number(variableValue) > Number(condition.value);
               break;
-            case '小于':
+            case ConditionType.LESS_THAN:
               conditionMet = Number(variableValue) < Number(condition.value);
               break;
-            case '大于等于':
+            case ConditionType.GREATER_THAN_OR_EQUALS:
               conditionMet = Number(variableValue) >= Number(condition.value);
               break;
-            case '小于等于':
+            case ConditionType.LESS_THAN_OR_EQUALS:
               conditionMet = Number(variableValue) <= Number(condition.value);
               break;
-            case '包含':
+            case ConditionType.CONTAINS:
               conditionMet = String(variableValue).includes(String(condition.value));
-              break;
-            case '不包含':
-              conditionMet = !String(variableValue).includes(String(condition.value));
               break;
           }
           
@@ -269,6 +270,11 @@ const PreviewComponent: React.FC<PreviewComponentProps> = ({ nodes, edges, onClo
 
   // 处理重新开始游戏
   const handleRestart = () => {
+    // 重置所有变量到初始值
+    const appVariables = window.appVariables || [];
+    setTempVariables(deepCopyVariables(appVariables));
+    
+    // 回到开始节点
     const startNode = nodes.find(node => node.type === 'start');
     if (startNode) {
       setCurrentNodeId(startNode.id);

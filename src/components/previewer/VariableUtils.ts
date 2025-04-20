@@ -60,7 +60,11 @@ export const parseVariables = (text: string, tempVariables: CustomVariable[]): s
   
   // 替换普通变量引用 {{变量名}}
   parsedText = parsedText.replace(/{{([^}]+)}}/g, (_match, varName) => {
+    console.log('varName', varName);
     const value = getVariableValue(varName.trim(), tempVariables);
+    console.log('value', value);
+    // 确保返回变量的实际值而不是变量名
+    // 如果变量值存在，则转换为字符串返回，否则保留原始匹配文本
     return value !== null && value !== undefined ? String(value) : _match;
   });
   
