@@ -5,13 +5,7 @@ import { NODE_TYPES } from '../../nodeeditor/constants';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { ConditionType } from '../../nodeeditor/constants/conditionTypes';
 
-// 文本截断辅助函数
-const truncateText = (text: string): string => {
-  if (text.length > 5) {
-    return text.substring(0, 5) + '...';
-  }
-  return text;
-};
+// 不再需要文本截断辅助函数
 
 export const ConditionNode = ({ data, id, selected }: NodeProps) => {
   // 获取条件分支列表，默认为空数组

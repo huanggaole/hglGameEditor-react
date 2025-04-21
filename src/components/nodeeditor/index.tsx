@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Node } from 'reactflow';
-import { CustomVariable } from '../VariableEditor';
-import { NODE_LABELS, NODE_TYPES } from './constants';
+import { useState } from 'react';
+import { NODE_TYPES } from './constants';
 import { NodeEditorProps } from './types';
 import ContainerNodeEditor from './nodes/ContainerNodeEditor';
 import PlotNodeEditor from './nodes/PlotNodeEditor';

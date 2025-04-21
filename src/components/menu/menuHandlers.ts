@@ -1,5 +1,5 @@
 import { Node, Edge } from 'reactflow';
-import { getNodeLabels, NODE_LABELS, NODE_TYPES } from '../nodeeditor/constants';
+import { NODE_LABELS, NODE_TYPES } from '../nodeeditor/constants';
 import { resetCounters } from '../../app/initialState';
 
 export const handleNew = (setNodes: (nodes: Node[]) => void, setEdges: (edges: Edge[]) => void, setVariables?: (variables: any[]) => void, setCurrentPath?: (path: {id: string, name: string}[]) => void, setCurrentContainerId?: (id: string | null) => void, t?:any) => {

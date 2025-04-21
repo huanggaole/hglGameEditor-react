@@ -12,7 +12,7 @@ const EdgeEditor: React.FC<EdgeEditorProps> = ({ edge, onClose, updateEdge }) =>
   // 初始化边的数据，如果没有data则创建空对象
   const initialData = edge.data || {};
   const [updateVariables, setUpdateVariables] = useState<{[key: string]: any}>(initialData.updateVariables || {}); // 变量更新
-  const [variables, setVariables] = useState<any[]>([]); // 存储可用变量列表
+  const [variables, setVariables] = useState<any[]>([]); // 变量列表的状态定义
   
   // 获取所有节点，用于显示源节点和目标节点的名称
   const nodes = useNodes();
@@ -27,7 +27,7 @@ const EdgeEditor: React.FC<EdgeEditorProps> = ({ edge, onClose, updateEdge }) =>
   
   // 加载变量列表
   useEffect(() => {
-    const appVariables = window.appVariables || [];
+    const appVariables = window.appVariables || variables;
     setVariables(appVariables);
   }, []);
 

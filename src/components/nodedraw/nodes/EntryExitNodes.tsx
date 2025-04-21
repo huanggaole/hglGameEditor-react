@@ -21,7 +21,7 @@ export const EntryNode = ({}: NodeProps) => {
 
 // 出口节点 - 收纳节点内部的出口点
 export const ExitNode = ({ data, id, selected }: NodeProps) => {
-  const { setNodes } = useReactFlow();
+  useReactFlow(); // 保留hook调用但不使用返回值
 
   return (
     <div

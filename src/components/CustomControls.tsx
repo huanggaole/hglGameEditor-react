@@ -6,7 +6,6 @@ interface CustomControlsProps {
   position?: PanelPosition;
   showZoom?: boolean;
   showFitView?: boolean;
-  showInteractive?: boolean;
   showPaste?: boolean;
   copiedNode: any | null;
   onPaste: () => void;
@@ -16,7 +15,6 @@ const CustomControls: React.FC<CustomControlsProps> = ({
   position = 'bottom-right',
   showZoom = true,
   showFitView = true,
-  showInteractive = false,
   showPaste = true,
   copiedNode,
   onPaste,

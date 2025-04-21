@@ -18,7 +18,7 @@ interface OperPanelProps {
 // 移除未使用的setEdges参数
 const OperPanel: React.FC<OperPanelProps> = ({ nodes, setNodes, setSelectedEdge, createNode, currentPath, setCurrentPath, currentContainerId, setCurrentContainerId }) => {
   // 使用语言上下文
-  const { currentLanguage, t } = useLanguage();
+  const { t } = useLanguage();
   
   // 处理返回上一级
   const handleGoBack = () => {

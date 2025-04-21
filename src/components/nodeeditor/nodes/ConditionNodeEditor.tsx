@@ -103,7 +103,7 @@ const ConditionNodeEditor: React.FC<ConditionNodeEditorProps> = ({
   const getConditionTypeOptions = (variableType: string) => {
     const availableTypes = variableTypeToConditionTypes[variableType] || [ConditionType.EQUALS];
     return availableTypes.map(type => (
-      <option key={type} value={type}>{t[conditionTypeToTransKey[type]]}</option>
+      <option key={type} value={type}>{t[conditionTypeToTransKey[type] as keyof typeof t]}</option>
     ));
   };
 

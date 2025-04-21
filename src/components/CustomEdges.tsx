@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { EdgeProps, getBezierPath, useReactFlow } from 'reactflow';
 import { EdgeControls } from './NodeEdgeControls';
 
